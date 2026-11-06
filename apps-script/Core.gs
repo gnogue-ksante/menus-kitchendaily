@@ -181,7 +181,6 @@ function MenuCore() {
       if (g && g.nom && nk(g.nom) !== nk(p.nom)) issue('Nom différent', code, d.nom, 'Plan : « ' + p.nom + ' » / Gamme : « ' + g.nom + ' »', 'Les 2 fichiers › Nom PRODUIT');
       if (g && num(g.kcal) != null && num(p.kcal) != null && Math.abs(num(g.kcal) - num(p.kcal)) > Math.max(5, 0.02 * num(p.kcal)))
         issue('Kcal différentes', code, d.nom, 'Plan : ' + round(num(p.kcal)) + ' kcal / Gamme : ' + round(num(g.kcal)) + ' kcal', 'Les 2 fichiers › ENERGIE KCAL / plat');
-      if (!d.validated) { d.qc.push('avancement : ' + (d.progres || 'vide')); issue('Pas validé', code, d.nom, 'En ' + p.menu + ' avec Progrès = « ' + (d.progres || 'vide') + ' »', where + ' › Progrès'); }
       if (nk(p.statut) !== 'valide') issue('Statut', code, d.nom, 'Statut = « ' + (p.statut || 'vide') + ' »', where + ' › Statut');
       ['kcal', 'pro', 'glu', 'sel'].forEach(function (k) { if (d[k] == null) issue('Nutrition manquante', code, d.nom, 'Valeur « ' + k + ' / plat » vide : le plat n’entre pas dans les filtres nutritionnels', where); });
       if (nk(d.classe) === 'vegetarien' && !d.isVeggie) issue('Végétarien incohérent', code, d.nom, 'Classe Végétarien mais sous-catégorie « ' + d.souscat + ' »', where + ' › Sous catégorie');

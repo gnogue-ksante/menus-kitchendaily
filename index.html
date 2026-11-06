@@ -302,7 +302,6 @@ function MenuCore() {
       if (g && g.nom && nk(g.nom) !== nk(p.nom)) issue('Nom différent', code, d.nom, 'Plan : « ' + p.nom + ' » / Gamme : « ' + g.nom + ' »', 'Les 2 fichiers › Nom PRODUIT');
       if (g && num(g.kcal) != null && num(p.kcal) != null && Math.abs(num(g.kcal) - num(p.kcal)) > Math.max(5, 0.02 * num(p.kcal)))
         issue('Kcal différentes', code, d.nom, 'Plan : ' + round(num(p.kcal)) + ' kcal / Gamme : ' + round(num(g.kcal)) + ' kcal', 'Les 2 fichiers › ENERGIE KCAL / plat');
-      if (!d.validated) { d.qc.push('avancement : ' + (d.progres || 'vide')); issue('Pas validé', code, d.nom, 'En ' + p.menu + ' avec Progrès = « ' + (d.progres || 'vide') + ' »', where + ' › Progrès'); }
       if (nk(p.statut) !== 'valide') issue('Statut', code, d.nom, 'Statut = « ' + (p.statut || 'vide') + ' »', where + ' › Statut');
       ['kcal', 'pro', 'glu', 'sel'].forEach(function (k) { if (d[k] == null) issue('Nutrition manquante', code, d.nom, 'Valeur « ' + k + ' / plat » vide : le plat n’entre pas dans les filtres nutritionnels', where); });
       if (nk(d.classe) === 'vegetarien' && !d.isVeggie) issue('Végétarien incohérent', code, d.nom, 'Classe Végétarien mais sous-catégorie « ' + d.souscat + ' »', where + ' › Sous catégorie');
@@ -630,7 +629,6 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
   function card(d) {
     var b = '';
     if (d.permanent) b += '<span class="badge perm">Permanent</span>';
-    if (!d.validated) b += '<span class="badge prog">' + esc(d.progres || 'Avancement non renseigné') + '</span>';
     if (d.piment) b += '<span class="badge">🌶 Pimenté</span>';
     if (M.settings.showQcBadges && d.qc.length) b += '<span class="badge warn" title="' + esc(d.qc.join(' · ')) + '">⚠ incohérence</span>';
     return '<div class="card" data-code="' + esc(d.code) + '"><div class="badges">' + b + '</div><h3>' + esc(d.nom) + '</h3>' +
@@ -780,8 +778,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     var progs = M.programs.filter(function (p) { return d.programs[p.id]; }).map(function (p) { return p.label; });
     var rows = [['Poids', d.poids, 'g', 0], ['Énergie', d.kcal, 'kcal', 0], ['Matières grasses', d.mg, 'g', 1], ['dont saturées', d.ags, 'g', 1], ['Glucides', d.glu, 'g', 1], ['dont sucres', d.suc, 'g', 1], ['Fibres', d.fib, 'g', 1], ['Protéines', d.pro, 'g', 1], ['Sel', d.sel, 'g', 2]];
     var tags = M.filters.filter(function (f) { return f.group === 'regime' && f.test(d); }).map(function (f) { return f.label; });
-    var h = '<button class="x" data-close="dishModal">×</button><div class="badges">' + (d.permanent ? '<span class="badge perm">Permanent (Menu 0)</span>' : '<span class="badge">Menu ' + d.menu + '</span>') +
-      (!d.validated ? '<span class="badge prog">' + esc(d.progres || 'Avancement non renseigné') + '</span>' : '<span class="badge">Validé</span>') + '</div>' +
+    var h = '<button class="x" data-close="dishModal">×</button><div class="badges">' + (d.permanent ? '<span class="badge perm">Permanent (Menu 0)</span>' : '<span class="badge">Menu ' + d.menu + '</span>') + '</div>' +
       '<h2>' + esc(d.nom) + '</h2><div class="meta">' + esc(d.code) + ' · ' + [d.classe, d.souscat, d.prot, d.garn, d.spec, d.saison].filter(Boolean).map(esc).join(' · ') + '</div>';
     if (d.desc) h += '<div class="sec"><h4>Description</h4><div>' + esc(d.desc) + '</div></div>';
     h += '<div class="sec"><h4>Allergènes</h4><div class="alg">' + allergList(d) + '</div>' + (d.allergTxt ? '<div class="note" style="margin-top:4px">Texte source : ' + esc(d.allergTxt) + '</div>' : '') + '</div>';
@@ -823,8 +820,8 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
   }
   function weekRows() {
     var w = M.weeks[st.wi], list = apply(baseList(), activeTests());
-    return [['Semaine', 'Programme', 'Code', 'Plat', 'Permanent', 'Classe', 'Protéine', 'Garniture', 'Spécialité', 'kcal', 'Protéines (g)', 'Glucides (g)', 'Sel (g)', 'Allergènes', 'Avancement']].concat(list.map(function (d) {
-        return ['S' + w.num + ' ' + w.year, progName(st.prog), d.code, d.nom, d.permanent ? 'Oui' : '', d.classe, d.prot, d.garn, d.spec, fmt(d.kcal), fmt(d.pro, 1), fmt(d.glu, 1), fmt(d.sel, 2), d.allergKnown ? d.allergTxt : 'non renseignés', d.progres];
+    return [['Semaine', 'Programme', 'Code', 'Plat', 'Permanent', 'Classe', 'Protéine', 'Garniture', 'Spécialité', 'kcal', 'Protéines (g)', 'Glucides (g)', 'Sel (g)', 'Allergènes']].concat(list.map(function (d) {
+        return ['S' + w.num + ' ' + w.year, progName(st.prog), d.code, d.nom, d.permanent ? 'Oui' : '', d.classe, d.prot, d.garn, d.spec, fmt(d.kcal), fmt(d.pro, 1), fmt(d.glu, 1), fmt(d.sel, 2), d.allergKnown ? d.allergTxt : 'non renseignés'];
       }));
   }
   function exportWeek() { var w = M.weeks[st.wi]; download('Menu_' + progName(st.prog).replace(/\W+/g, '_') + '_S' + w.num + '_' + w.year + '.csv', weekRows()); }
