@@ -26,7 +26,7 @@ function MenuCore() {
     { id: 'porc', label: 'porc', syn: ['porc'] }
   ];
   // Mots reconnus mais qui ne sont pas des allergènes (préférences)
-  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet'];
+  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet', 'coriandre'];
 
   var DEFAULT_SETTINGS = {
     criteria: { protplus: 30, leger: 350, keto: 15, lowcarb: 30, lowsalt: 2 },
@@ -271,12 +271,36 @@ function MenuCore() {
       { id: 'keto', group: 'regime', label: 'Keto', hint: '< ' + c.keto + ' g de glucides / plat', test: function (d) { return d.glu != null && d.glu < c.keto; } },
       { id: 'lowsalt', group: 'regime', label: 'Low salt', hint: '< ' + c.lowsalt + ' g de sel / plat', test: function (d) { return d.sel != null && d.sel < c.lowsalt; } }
     ];
-    ALLERGENS.forEach(function (a) {
-      f.push({ id: 'sans_' + a.id, group: 'sans', label: 'Sans ' + a.label, hint: 'Allergènes renseignés et sans ' + a.label,
-        test: a.id === 'porc'
-          ? function (d) { return d.allergKnown && !d.hasPorc; }
-          : function (d) { return d.allergKnown && !d.allergens[a.id]; } });
-    });
+    // Filtres « Sans … » : mêmes 22 filtres que sur le site (KY Minceur et KY Quotidien)
+    function al(id) { return function (d) { return d.allergKnown && !d.allergens[id]; }; }
+    function txt(d) { return nk(d.prot + ' ' + d.nom); }
+    var SEAFOOD = /crevette|st jacques|saint jacques|moule|calamar|encornet|poulpe|homard|langoustine|gambas/;
+    var SPICY = /piment|chili|harissa|sriracha|jalapeno|espelette/;
+    var site = [
+      { id: 'sans_boeuf', label: 'Sans boeuf', hint: 'Type de protéine différent de Bœuf', test: function (d) { return nk(d.prot) !== 'boeuf' && !d.allergens._boeuf; } },
+      { id: 'sans_arachide', label: 'Sans cacahuètes', hint: 'Allergènes renseignés et sans arachide', test: al('arachide') },
+      { id: 'sans_celeri', label: 'Sans céleri', hint: 'Allergènes renseignés et sans céleri', test: al('celeri') },
+      { id: 'sans_coriandre', label: 'Sans coriandre', hint: 'Coriandre absente de la liste d\u2019ingrédients (à confirmer par la R&D)', test: function (d) { return !!d.ingr && !/coriandre/.test(nk(d.ingr)) && !d.allergens._coriandre; } },
+      { id: 'sans_crustaces', label: 'Sans crustacés', hint: 'Allergènes renseignés et sans crustacés', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !/crevette|homard|langoustine|gambas/.test(txt(d)); } },
+      { id: 'sans_epices', label: 'Sans épicés', hint: 'Pas encore disponible : aucune colonne « épicé » dans les fichiers R&D', unavailable: true, test: function () { return false; } },
+      { id: 'sans_coque', label: 'Sans fruits à coques', hint: 'Allergènes renseignés et sans fruits à coque', test: al('coque') },
+      { id: 'sans_fruitsdemer', label: 'Sans fruits de mer', hint: 'Sans crustacés ni mollusques', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !d.allergens.mollusques && !SEAFOOD.test(txt(d)); } },
+      { id: 'sans_gluten', label: 'Sans gluten', hint: 'Allergènes renseignés et sans gluten', test: al('gluten') },
+      { id: 'sans_lait', label: 'Sans lait', hint: 'Allergènes renseignés et sans lait', test: al('lait') },
+      { id: 'sans_mollusques', label: 'Sans mollusque', hint: 'Allergènes renseignés et sans mollusques', test: function (d) { return d.allergKnown && !d.allergens.mollusques && !/st jacques|saint jacques|moule|calamar|encornet|poulpe/.test(txt(d)); } },
+      { id: 'sans_moutarde', label: 'Sans moutarde', hint: 'Allergènes renseignés et sans moutarde', test: al('moutarde') },
+      { id: 'sans_oeuf', label: 'Sans oeuf', hint: 'Allergènes renseignés et sans œuf', test: al('oeuf') },
+      { id: 'sans_piment', label: 'Sans piment', hint: 'D\u2019après le picto piment et le nom du plat (à confirmer par la R&D)', test: function (d) { return !d.piment && !SPICY.test(nk(d.nom)) && !/pimente/.test(nk(d.nom)); } },
+      { id: 'sans_poisson', label: 'Sans poisson', hint: 'Allergènes renseignés, sans poisson et hors sous-catégorie Poisson', test: function (d) { return d.allergKnown && !d.allergens.poisson && nk(d.souscat) !== 'poisson'; } },
+      { id: 'sans_porc', label: 'Sans porc', hint: 'Allergènes renseignés, sans porc et protéine différente de Porc', test: function (d) { return d.allergKnown && !d.hasPorc; } },
+      { id: 'sans_sesame', label: 'Sans sésame', hint: 'Allergènes renseignés et sans sésame', test: al('sesame') },
+      { id: 'sans_soja', label: 'Sans soja', hint: 'Allergènes renseignés et sans soja', test: al('soja') },
+      { id: 'sans_sulfites', label: 'Sans sulfites', hint: 'Allergènes renseignés et sans sulfites', test: al('sulfites') },
+      { id: 'sans_vegetarien', label: 'Sans végétarien', hint: 'Exclut les plats de la sous-catégorie Végétarien', test: function (d) { return !d.isVeggie; } },
+      { id: 'sans_viande', label: 'Sans viande', hint: 'Exclut la sous-catégorie Viande (bœuf, porc…)', test: function (d) { return nk(d.souscat) !== 'viande' && ['boeuf', 'porc', 'veau', 'agneau'].indexOf(nk(d.prot)) < 0; } },
+      { id: 'sans_volaille', label: 'Sans volaille', hint: 'Exclut la sous-catégorie Volaille (poulet, dinde, canard)', test: function (d) { return nk(d.souscat) !== 'volaille' && ['poulet', 'dinde', 'canard'].indexOf(nk(d.prot)) < 0; } }
+    ];
+    site.forEach(function (x) { x.group = 'sans'; f.push(x); });
     return f;
   }
 

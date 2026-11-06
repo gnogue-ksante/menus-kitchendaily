@@ -147,7 +147,7 @@ function MenuCore() {
     { id: 'porc', label: 'porc', syn: ['porc'] }
   ];
   // Mots reconnus mais qui ne sont pas des allergènes (préférences)
-  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet'];
+  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet', 'coriandre'];
 
   var DEFAULT_SETTINGS = {
     criteria: { protplus: 30, leger: 350, keto: 15, lowcarb: 30, lowsalt: 2 },
@@ -392,12 +392,36 @@ function MenuCore() {
       { id: 'keto', group: 'regime', label: 'Keto', hint: '< ' + c.keto + ' g de glucides / plat', test: function (d) { return d.glu != null && d.glu < c.keto; } },
       { id: 'lowsalt', group: 'regime', label: 'Low salt', hint: '< ' + c.lowsalt + ' g de sel / plat', test: function (d) { return d.sel != null && d.sel < c.lowsalt; } }
     ];
-    ALLERGENS.forEach(function (a) {
-      f.push({ id: 'sans_' + a.id, group: 'sans', label: 'Sans ' + a.label, hint: 'Allergènes renseignés et sans ' + a.label,
-        test: a.id === 'porc'
-          ? function (d) { return d.allergKnown && !d.hasPorc; }
-          : function (d) { return d.allergKnown && !d.allergens[a.id]; } });
-    });
+    // Filtres « Sans … » : mêmes 22 filtres que sur le site (KY Minceur et KY Quotidien)
+    function al(id) { return function (d) { return d.allergKnown && !d.allergens[id]; }; }
+    function txt(d) { return nk(d.prot + ' ' + d.nom); }
+    var SEAFOOD = /crevette|st jacques|saint jacques|moule|calamar|encornet|poulpe|homard|langoustine|gambas/;
+    var SPICY = /piment|chili|harissa|sriracha|jalapeno|espelette/;
+    var site = [
+      { id: 'sans_boeuf', label: 'Sans boeuf', hint: 'Type de protéine différent de Bœuf', test: function (d) { return nk(d.prot) !== 'boeuf' && !d.allergens._boeuf; } },
+      { id: 'sans_arachide', label: 'Sans cacahuètes', hint: 'Allergènes renseignés et sans arachide', test: al('arachide') },
+      { id: 'sans_celeri', label: 'Sans céleri', hint: 'Allergènes renseignés et sans céleri', test: al('celeri') },
+      { id: 'sans_coriandre', label: 'Sans coriandre', hint: 'Coriandre absente de la liste d\u2019ingrédients (à confirmer par la R&D)', test: function (d) { return !!d.ingr && !/coriandre/.test(nk(d.ingr)) && !d.allergens._coriandre; } },
+      { id: 'sans_crustaces', label: 'Sans crustacés', hint: 'Allergènes renseignés et sans crustacés', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !/crevette|homard|langoustine|gambas/.test(txt(d)); } },
+      { id: 'sans_epices', label: 'Sans épicés', hint: 'Pas encore disponible : aucune colonne « épicé » dans les fichiers R&D', unavailable: true, test: function () { return false; } },
+      { id: 'sans_coque', label: 'Sans fruits à coques', hint: 'Allergènes renseignés et sans fruits à coque', test: al('coque') },
+      { id: 'sans_fruitsdemer', label: 'Sans fruits de mer', hint: 'Sans crustacés ni mollusques', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !d.allergens.mollusques && !SEAFOOD.test(txt(d)); } },
+      { id: 'sans_gluten', label: 'Sans gluten', hint: 'Allergènes renseignés et sans gluten', test: al('gluten') },
+      { id: 'sans_lait', label: 'Sans lait', hint: 'Allergènes renseignés et sans lait', test: al('lait') },
+      { id: 'sans_mollusques', label: 'Sans mollusque', hint: 'Allergènes renseignés et sans mollusques', test: function (d) { return d.allergKnown && !d.allergens.mollusques && !/st jacques|saint jacques|moule|calamar|encornet|poulpe/.test(txt(d)); } },
+      { id: 'sans_moutarde', label: 'Sans moutarde', hint: 'Allergènes renseignés et sans moutarde', test: al('moutarde') },
+      { id: 'sans_oeuf', label: 'Sans oeuf', hint: 'Allergènes renseignés et sans œuf', test: al('oeuf') },
+      { id: 'sans_piment', label: 'Sans piment', hint: 'D\u2019après le picto piment et le nom du plat (à confirmer par la R&D)', test: function (d) { return !d.piment && !SPICY.test(nk(d.nom)) && !/pimente/.test(nk(d.nom)); } },
+      { id: 'sans_poisson', label: 'Sans poisson', hint: 'Allergènes renseignés, sans poisson et hors sous-catégorie Poisson', test: function (d) { return d.allergKnown && !d.allergens.poisson && nk(d.souscat) !== 'poisson'; } },
+      { id: 'sans_porc', label: 'Sans porc', hint: 'Allergènes renseignés, sans porc et protéine différente de Porc', test: function (d) { return d.allergKnown && !d.hasPorc; } },
+      { id: 'sans_sesame', label: 'Sans sésame', hint: 'Allergènes renseignés et sans sésame', test: al('sesame') },
+      { id: 'sans_soja', label: 'Sans soja', hint: 'Allergènes renseignés et sans soja', test: al('soja') },
+      { id: 'sans_sulfites', label: 'Sans sulfites', hint: 'Allergènes renseignés et sans sulfites', test: al('sulfites') },
+      { id: 'sans_vegetarien', label: 'Sans végétarien', hint: 'Exclut les plats de la sous-catégorie Végétarien', test: function (d) { return !d.isVeggie; } },
+      { id: 'sans_viande', label: 'Sans viande', hint: 'Exclut la sous-catégorie Viande (bœuf, porc…)', test: function (d) { return nk(d.souscat) !== 'viande' && ['boeuf', 'porc', 'veau', 'agneau'].indexOf(nk(d.prot)) < 0; } },
+      { id: 'sans_volaille', label: 'Sans volaille', hint: 'Exclut la sous-catégorie Volaille (poulet, dinde, canard)', test: function (d) { return nk(d.souscat) !== 'volaille' && ['poulet', 'dinde', 'canard'].indexOf(nk(d.prot)) < 0; } }
+    ];
+    site.forEach(function (x) { x.group = 'sans'; f.push(x); });
     return f;
   }
 
@@ -572,10 +596,8 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     // Recherche + filtres
     h += '<div class="row"><input class="search" id="q" placeholder="Rechercher un plat…" value="' + esc(st.q) + '"></div>';
     h += chipGroup('Régimes', M.filters.filter(function (f) { return f.group === 'regime'; }), base);
-    var sans = M.filters.filter(function (f) { return f.group === 'sans'; });
-    var main = ['sans_gluten', 'sans_lait', 'sans_oeuf', 'sans_porc', 'sans_poisson', 'sans_crustaces'];
-    h += chipGroup('Allergènes', sans.filter(function (f) { return st.more || main.indexOf(f.id) >= 0 || st.filters[f.id]; }), base);
-    h += '<button class="more" id="more">' + (st.more ? '▴ Moins de filtres' : '▾ Plus de filtres (autres allergènes, protéine, garniture, spécialité, classe)') + '</button>';
+    h += chipGroup('Filtres (comme sur le site)', M.filters.filter(function (f) { return f.group === 'sans'; }), base);
+    h += '<button class="more" id="more">' + (st.more ? '▴ Moins de critères' : '▾ Plus de critères (protéine, garniture, spécialité, classe)') + '</button>';
     if (st.more) Object.keys(M.facets).forEach(function (k) { h += facetGroup(k, base); });
     h += '<div class="result"><span><b>' + list.length + '</b> plat' + (list.length > 1 ? 's' : '') + (nActive() ? ' sur ' + base.length + ' · <button class="link" id="clear">Effacer les filtres</button>' : '') + '</span>' +
       '<span class="toolbar row"><button class="btn" id="copy">Copier la liste</button>' + (canFile ? '<button class="btn" id="csv">Export CSV</button><button class="btn" id="print">Imprimer / PDF</button>' : '') + '</span></div>';
@@ -586,6 +608,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
   function chipGroup(title, filters, base) {
     var tests = activeTests();
     return '<div class="glabel">' + title + '</div><div class="chips">' + filters.map(function (f) {
+      if (f.unavailable) return '<button class="chip zero" disabled title="' + esc(f.hint) + '">' + esc(f.label) + '<span class="n">(à venir)</span></button>';
       var n = apply(base, tests.concat([f.test])).length;
       return '<button class="chip' + (st.filters[f.id] ? ' on' : '') + (n ? '' : ' zero') + '" data-f="' + f.id + '" title="' + esc(f.hint) + '">' + esc(f.label) + '<span class="n">(' + n + ')</span></button>';
     }).join('') + '</div>';
@@ -620,7 +643,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     var from = M.currentWeekIndex(), n = M.settings.horizon, rows = M.weeks.slice(from, from + n);
     var h = '<div class="row" style="margin:12px 0"><button class="pill' + (st.planMode === 'filtre' ? ' on' : '') + '" data-pm="filtre">Par filtre · ' + esc(progName(st.prog)) + '</button>' +
       '<button class="pill' + (st.planMode === 'prog' ? ' on' : '') + '" data-pm="prog">Par programme</button>';
-    if (st.planMode === 'prog') h += '<select id="planFilter"><option value="total">Nombre total de plats</option>' + M.filters.map(function (f) {
+    if (st.planMode === 'prog') h += '<select id="planFilter"><option value="total">Nombre total de plats</option>' + M.filters.filter(function (f) { return !f.unavailable; }).map(function (f) {
       return '<option value="' + f.id + '"' + (st.planFilter === f.id ? ' selected' : '') + '>' + esc(f.label) + '</option>'; }).join('') + '</select>';
     h += '</div><p class="note">' + n + ' prochaines semaines. Case rouge = sous le seuil réglé. Clique sur une case pour ouvrir la semaine.</p>';
     var cols, cell;
@@ -691,8 +714,9 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
       '<div class="step"><b class="n">2</b>Colle les plats du colis d’origine : codes SKU (KU…) ou noms, un par ligne, copiés depuis Sylius.</div>' +
       '<div class="step"><b class="n">3</b>Coche les contraintes du client (allergies, régime), puis clique sur <b>Vérifier le colis</b>.</div></div>' +
       '<textarea id="dupText" placeholder="Ex. :\nKU417\n2 x KU203\nTajine de poulet aux fruits secs et boulgour">' + esc(st.dupText) + '</textarea>';
-    var fl = M.filters.filter(function (f) { return f.group === 'regime' || ['sans_gluten', 'sans_lait', 'sans_oeuf', 'sans_porc', 'sans_poisson', 'sans_crustaces', 'sans_coque', 'sans_sesame', 'sans_soja', 'sans_celeri', 'sans_moutarde'].indexOf(f.id) >= 0; });
-    h += '<div class="glabel">Contraintes du client</div><div class="chips">' + fl.map(function (f) {
+    var fl = M.filters.filter(function (f) { return f.group === 'sans'; }).concat(M.filters.filter(function (f) { return f.group === 'regime'; }));
+    h += '<div class="glabel">Contraintes du client (mêmes filtres que sur le site)</div><div class="chips">' + fl.map(function (f) {
+      if (f.unavailable) return '<button class="chip zero" disabled title="' + esc(f.hint) + '">' + esc(f.label) + ' (à venir)</button>';
       return '<button class="chip' + (st.dupFilters[f.id] ? ' on' : '') + '" data-df="' + f.id + '" title="' + esc(f.hint) + '">' + esc(f.label) + '</button>'; }).join('') + '</div>';
     h += '<div class="row"><button class="btn primary" id="dupGo">Vérifier le colis</button>' + (st.dupText ? '<button class="link" id="dupClear">Vider</button>' : '') + '</div>';
     if (!st.dupRun) return h + '</div>';
@@ -776,7 +800,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     var h = '<button class="x" data-close="setModal">×</button><h2>Réglages</h2>' +
       '<div class="sec"><h4>Seuils d’alerte (nombre minimum de plats par semaine et par programme, 0 = pas d’alerte)</h4><div class="set">' +
       '<span>Plats au total</span><input type="number" min="0" data-min="total" value="' + (S.minimums.total || 0) + '">' +
-      M.filters.map(function (f) { return '<span>' + esc(f.label) + '</span><input type="number" min="0" data-min="' + f.id + '" value="' + (S.minimums[f.id] || 0) + '">'; }).join('') + '</div></div>' +
+      M.filters.filter(function (f) { return !f.unavailable; }).map(function (f) { return '<span>' + esc(f.label) + '</span><input type="number" min="0" data-min="' + f.id + '" value="' + (S.minimums[f.id] || 0) + '">'; }).join('') + '</div></div>' +
       '<div class="sec"><h4>Définition des profils</h4><div class="set">' + crit.map(function (x) { return '<span>' + x[1] + '</span><input type="number" step="0.5" data-crit="' + x[0] + '" value="' + c[x[0]] + '">'; }).join('') + '</div></div>' +
       '<div class="sec"><h4>Planning</h4><div class="set"><span>Nombre de semaines affichées</span><input type="number" min="4" max="26" id="hz" value="' + S.horizon + '"></div></div>' +
       '<div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn" id="reset">Valeurs par défaut</button><button class="btn primary" id="save">Enregistrer</button></div>' +
