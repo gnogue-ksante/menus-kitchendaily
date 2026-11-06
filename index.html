@@ -26,7 +26,7 @@ header .src{font-size:12px;opacity:.85;flex:1;min-width:160px}
 .weeknav button{border:1px solid var(--line);background:#fff;border-radius:50%;width:34px;height:34px;font-size:15px;color:var(--g)}
 .weeknav button:disabled{opacity:.35;cursor:default}
 .wlabel{font-weight:700;font-size:15px;padding:0 6px}
-.today{font-size:12px;color:var(--o);background:none;border:none;text-decoration:underline}
+.today{font-size:12px;color:var(--o);background:none;border:none;text-decoration:underline;white-space:nowrap}
 .tabs{display:flex;gap:4px;margin-top:10px;border-bottom:2px solid var(--line)}
 .tab{background:none;border:none;padding:8px 12px;font-weight:700;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
 .tab.on{color:var(--g);border-color:var(--o)}
@@ -58,6 +58,14 @@ header .src{font-size:12px;opacity:.85;flex:1;min-width:160px}
 .card:hover{box-shadow:0 3px 12px rgba(0,0,0,.08)}
 .card h3{font-size:14px;margin:0;line-height:1.3}
 .meta{font-size:12px;color:var(--mut)}
+.sku{font-family:Consolas,Menlo,monospace;font-size:12px;font-weight:700;color:var(--g2);background:#eef3ef;border-radius:5px;padding:1px 6px;user-select:all}
+.dup textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;background:#fff}
+.dupres td{text-align:left;vertical-align:top}
+.st-ok{color:var(--g2);font-weight:700}.st-ko{color:var(--red);font-weight:700}.st-warn{color:#b45300;font-weight:700}
+.sugg{margin:3px 0}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:12px 0}
+.step{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.step b.n{display:inline-block;background:var(--o);color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;font-size:12px;margin-right:6px}
 .nut{display:flex;gap:10px;font-size:12px}.nut b{color:var(--ink)}
 .badges{display:flex;gap:4px;flex-wrap:wrap}
 .badge{font-size:11px;border-radius:10px;padding:2px 8px;background:#eef3ef;color:var(--g2);font-weight:700}
@@ -414,7 +422,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
 (function () {
   var Core = MenuCore();
   var M, raw, settings;
-  var st = { prog: 'nut', wi: 0, tab: 'menu', filters: {}, facets: {}, q: '', more: false, planMode: 'filtre', planFilter: 'total', cmp: 'ky', qcType: '' };
+  var st = { prog: 'nut', wi: 0, tab: 'menu', filters: {}, facets: {}, q: '', more: false, planMode: 'filtre', planFilter: 'total', cmp: 'ky', qcType: '', dupText: '', dupFilters: {}, dupRun: false };
   var COLORS = { 'Volaille': '#F4B860', 'Viande': '#B5472F', 'Poisson': '#3A7CA5', 'Végétarien': '#1B7F39' };
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -527,12 +535,13 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
       '<button id="next" ' + (st.wi >= M.weeks.length - 1 ? 'disabled' : '') + ' aria-label="Semaine suivante">▶</button>' +
       (st.wi !== M.currentWeekIndex() ? '<button class="today" id="today">Revenir à cette semaine</button>' : '') + '</div>';
     var nQc = M.issues.length;
-    h += '<div class="tabs">' + [['menu', 'Menu de la semaine'], ['plan', 'Planning'], ['cmp', 'Comparer']].map(function (t) {
+    h += '<div class="tabs">' + [['menu', 'Menu de la semaine'], ['dup', 'Duplication de colis'], ['plan', 'Planning'], ['cmp', 'Comparer']].map(function (t) {
       return '<button class="tab' + (st.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
     }).join('') + '<button class="tab qc' + (st.tab === 'qc' ? ' on' : '') + '" data-tab="qc">Contrôle qualité (' + nQc + ')</button></div></div>';
     if (st.tab === 'menu') h += viewMenu();
     if (st.tab === 'plan') h += viewPlanning();
     if (st.tab === 'cmp') h += viewCompare();
+    if (st.tab === 'dup') h += viewDup();
     if (st.tab === 'qc') h += viewQc();
     $('app').innerHTML = h;
     bind();
@@ -602,7 +611,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     if (d.piment) b += '<span class="badge">🌶 Pimenté</span>';
     if (M.settings.showQcBadges && d.qc.length) b += '<span class="badge warn" title="' + esc(d.qc.join(' · ')) + '">⚠ incohérence</span>';
     return '<div class="card" data-code="' + esc(d.code) + '"><div class="badges">' + b + '</div><h3>' + esc(d.nom) + '</h3>' +
-      '<div class="meta">' + [d.classe, d.prot, d.garn].filter(function (x, i, a) { return x && a.indexOf(x) === i; }).map(esc).join(' · ') + '</div>' +
+      '<div class="meta"><span class="sku" title="SKU">' + esc(d.code) + '</span> ' + [d.classe, d.prot, d.garn].filter(function (x, i, a) { return x && a.indexOf(x) === i; }).map(esc).join(' · ') + '</div>' +
       '<div class="nut"><span><b>' + fmt(d.kcal) + '</b> kcal</span><span><b>' + fmt(d.pro, 1) + '</b> g prot.</span><span><b>' + fmt(d.glu, 1) + '</b> g gluc.</span></div>' +
       '<div class="alg">' + allergList(d) + '</div></div>';
   }
@@ -635,11 +644,94 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     return h + '</tbody></table></div>';
   }
 
+  // ---------- Duplication de colis
+  function parseParcel(txt) {
+    var byCode = {}, rows = [], seen = {};
+    M.dishes.forEach(function (d) { byCode[d.code.toUpperCase()] = d; });
+    String(txt || '').split(/\n+/).forEach(function (line) {
+      var raw = line.trim(); if (!raw) return;
+      var qm = raw.match(/^(\d{1,2})\s*[x×*]?\s+/i), qty = qm ? +qm[1] : 1;
+      var codes = raw.match(/\b(KU|KD|KT|KX|KY|DB|DS)\s?-?\d{2,4}\b/gi);
+      if (codes) {
+        codes.forEach(function (c) {
+          var k = c.replace(/[\s-]/g, '').toUpperCase(), d = byCode[k];
+          if (seen[k]) { seen[k].qty += qty; return; }
+          var r = { line: raw, code: k, dish: d || null, qty: qty }; seen[k] = r; rows.push(r);
+        });
+        return;
+      }
+      var n = Core.nk(raw.replace(/^(\d{1,2})\s*[x×*]?\s+/i, '')), best = null;
+      if (n.length >= 6) M.dishes.forEach(function (d) {
+        var dn = Core.nk(d.nom);
+        if (!best && (dn === n || (n.length > 10 && dn.indexOf(n) >= 0) || (dn.length > 10 && n.indexOf(dn) >= 0))) best = d;
+      });
+      var key = best ? best.code : 'L' + rows.length;
+      if (best && seen[key]) { seen[key].qty += qty; return; }
+      var r = { line: raw, code: best ? best.code : '', dish: best, qty: qty }; seen[key] = r; rows.push(r);
+    });
+    return rows;
+  }
+  function dupTests() { return Object.keys(st.dupFilters).filter(function (k) { return st.dupFilters[k]; }).map(function (k) { return M.filterById(k); }); }
+  function nextWeekFor(d) {
+    for (var i = st.wi + 1; i < M.weeks.length; i++) if ((d.menu === 0 || d.menu === M.weeks[i].menu) && d.programs[st.prog]) return M.weeks[i];
+    return null;
+  }
+  function suggest(d, avail, exclude, tests) {
+    return avail.filter(function (x) { return !exclude[x.code] && tests.every(function (f) { return f.test(x); }); })
+      .map(function (x) {
+        var sc = (x.souscat === d.souscat ? 3 : 0) + (x.prot === d.prot ? 2 : 0) + (x.garn === d.garn ? 1 : 0) + (x.classe === d.classe ? 1 : 0);
+        if (d.kcal != null && x.kcal != null) sc -= Math.abs(d.kcal - x.kcal) / 150;
+        return { d: x, s: sc };
+      }).sort(function (a, b) { return b.s - a.s; }).slice(0, 3).map(function (o) { return o.d; });
+  }
+  function viewDup() {
+    var w = M.weeks[st.wi], tests = dupTests();
+    var h = '<div class="dup"><div class="steps">' +
+      '<div class="step"><b class="n">1</b>Choisis en haut le <b>programme du client</b> et la <b>semaine de livraison</b> du nouveau colis.<br><span class="note">Livraison : ' + esc(w.label) + ' · ' + esc(progName(st.prog)) + '</span></div>' +
+      '<div class="step"><b class="n">2</b>Colle les plats du colis d’origine : codes SKU (KU…) ou noms, un par ligne, copiés depuis Sylius.</div>' +
+      '<div class="step"><b class="n">3</b>Coche les contraintes du client (allergies, régime), puis clique sur <b>Vérifier le colis</b>.</div></div>' +
+      '<textarea id="dupText" placeholder="Ex. :\nKU417\n2 x KU203\nTajine de poulet aux fruits secs et boulgour">' + esc(st.dupText) + '</textarea>';
+    var fl = M.filters.filter(function (f) { return f.group === 'regime' || ['sans_gluten', 'sans_lait', 'sans_oeuf', 'sans_porc', 'sans_poisson', 'sans_crustaces', 'sans_coque', 'sans_sesame', 'sans_soja', 'sans_celeri', 'sans_moutarde'].indexOf(f.id) >= 0; });
+    h += '<div class="glabel">Contraintes du client</div><div class="chips">' + fl.map(function (f) {
+      return '<button class="chip' + (st.dupFilters[f.id] ? ' on' : '') + '" data-df="' + f.id + '" title="' + esc(f.hint) + '">' + esc(f.label) + '</button>'; }).join('') + '</div>';
+    h += '<div class="row"><button class="btn primary" id="dupGo">Vérifier le colis</button>' + (st.dupText ? '<button class="link" id="dupClear">Vider</button>' : '') + '</div>';
+    if (!st.dupRun) return h + '</div>';
+    var rows = parseParcel(st.dupText);
+    if (!rows.length) return h + '<div class="empty" style="margin-top:10px">Colle au moins un code ou un nom de plat.</div></div>';
+    var avail = M.weekDishes(st.wi, st.prog), inAvail = {}; avail.forEach(function (d) { inAvail[d.code] = 1; });
+    var exclude = {}; rows.forEach(function (r) { if (r.dish) exclude[r.dish.code] = 1; });
+    var ok = 0, ko = 0, final = [];
+    var body = rows.map(function (r) {
+      var d = r.dish, status, sug = '';
+      if (!d) { ko++; return '<tr><td>' + (r.code ? '<span class="sku">' + esc(r.code) + '</span> ' : '') + esc(r.line) + '</td><td class="st-warn">Non reconnu</td><td class="note">Plat introuvable dans le plan de menu actuel (ancien plat ou faute de frappe). Choisis un plat dans le menu de la semaine.</td></tr>'; }
+      var viol = tests.filter(function (f) { return !f.test(d); }).map(function (f) { return f.label; });
+      var isOk = inAvail[d.code] && !viol.length;
+      if (isOk) { ok++; final.push([r.qty, d]); status = '<span class="st-ok">✓ Disponible</span>'; }
+      else {
+        ko++;
+        var why = !inAvail[d.code] ? 'Pas au menu en S' + w.num : 'Ne respecte pas : ' + viol.join(', ');
+        var nx = !inAvail[d.code] ? nextWeekFor(d) : null;
+        status = '<span class="st-ko">✗ À remplacer</span><div class="note">' + esc(why) + (nx ? ' · prochain passage S' + nx.num : '') + (!d.programs[st.prog] ? ' · inactif sur ce programme' : '') + '</div>';
+        var sg = suggest(d, avail, exclude, tests);
+        if (sg[0]) { exclude[sg[0].code] = 1; final.push([r.qty, sg[0], d]); }
+        sug = sg.length ? sg.map(function (x, i) { return '<div class="sugg">' + (i === 0 ? '<b>→</b> ' : '<span class="note">ou</span> ') + '<span class="sku">' + esc(x.code) + '</span> <button class="link" data-open="' + esc(x.code) + '">' + esc(x.nom) + '</button> <span class="note">' + [x.prot, x.garn, fmt(x.kcal) + ' kcal'].filter(Boolean).map(esc).join(' · ') + '</span></div>'; }).join('')
+          : '<span class="note">Aucun plat équivalent ne respecte les contraintes cette semaine.</span>';
+      }
+      return '<tr><td><span class="sku">' + esc(d.code) + '</span> <button class="link" data-open="' + esc(d.code) + '">' + esc(d.nom) + '</button>' + (r.qty > 1 ? ' <b>× ' + r.qty + '</b>' : '') + '</td><td>' + status + '</td><td>' + (sug || '<span class="note">Rien à faire</span>') + '</td></tr>';
+    }).join('');
+    st._dupFinal = final;
+    h += '<div class="result"><span><b>' + ok + '</b> plat(s) disponible(s) tel(s) quel(s) · <b>' + ko + '</b> à remplacer ou vérifier · livraison ' + esc('S' + w.num + ' · ' + progName(st.prog)) + '</span>' +
+      '<span class="toolbar row"><button class="btn" id="dupCopy">Copier le colis proposé</button></span></div>';
+    h += '<div class="tablewrap"><table class="dupres"><thead><tr><th class="l">Plat du colis d’origine</th><th class="l">Semaine de livraison</th><th class="l">Remplacement proposé (même type de plat en priorité)</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+    h += '<p class="note">Les remplaçants respectent les contraintes cochées et le programme du client. L’app connaît le plan de menu, pas le stock du jour : en cas de rupture, la règle habituelle s’applique.</p>';
+    return h + '</div>';
+  }
+
   function viewCompare() {
     var a = baseList(), b = M.weekDishes(st.wi, st.cmp);
     var inB = {}, inA = {}; b.forEach(function (d) { inB[d.code] = 1; }); a.forEach(function (d) { inA[d.code] = 1; });
     var both = a.filter(function (d) { return inB[d.code]; }), onlyA = a.filter(function (d) { return !inB[d.code]; }), onlyB = b.filter(function (d) { return !inA[d.code]; });
-    function ul(l) { return l.length ? '<ul style="padding-left:18px;margin:0">' + l.map(function (d) { return '<li><button class="link" data-open="' + esc(d.code) + '">' + esc(d.nom) + '</button>' + (d.permanent ? ' <span class="badge perm">P</span>' : '') + '</li>'; }).join('') + '</ul>' : '<span class="note">Aucun</span>'; }
+    function ul(l) { return l.length ? '<ul style="padding-left:18px;margin:0">' + l.map(function (d) { return '<li><span class="sku">' + esc(d.code) + '</span> <button class="link" data-open="' + esc(d.code) + '">' + esc(d.nom) + '</button>' + (d.permanent ? ' <span class="badge perm">P</span>' : '') + '</li>'; }).join('') + '</ul>' : '<span class="note">Aucun</span>'; }
     var h = '<div class="row" style="margin:12px 0"><span>Comparer <b>' + esc(progName(st.prog)) + '</b> avec</span><select id="cmp">' + M.programs.filter(function (p) { return p.id !== st.prog; }).map(function (p) {
       return '<option value="' + p.id + '"' + (p.id === st.cmp ? ' selected' : '') + '>' + esc(p.label) + '</option>'; }).join('') + '</select></div>';
     return h + '<div class="cols"><div class="col"><h4>En commun (' + both.length + ')</h4>' + ul(both) + '</div><div class="col"><h4>Seulement ' + esc(progName(st.prog)) + ' (' + onlyA.length + ')</h4>' + ul(onlyA) + '</div><div class="col"><h4>Seulement ' + esc(progName(st.cmp)) + ' (' + onlyB.length + ')</h4>' + ul(onlyB) + '</div></div>';
@@ -743,6 +835,13 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     app.querySelectorAll('[data-go]').forEach(function (c) { c.onclick = function () {
       var p = c.getAttribute('data-go').split('|'); st.wi = +p[0]; st.prog = p[1]; st.filters = {}; st.facets = {}; st.q = '';
       if (p[2] !== 'total') st.filters[p[2]] = true; st.tab = 'menu'; render(); window.scrollTo(0, 0); }; });
+    app.querySelectorAll('[data-df]').forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-df'); st.dupText = $('dupText').value; st.dupFilters[k] = !st.dupFilters[k]; render(); }; });
+    if ($('dupGo')) $('dupGo').onclick = function () { st.dupText = $('dupText').value; st.dupRun = true; render(); };
+    if ($('dupClear')) $('dupClear').onclick = function () { st.dupText = ''; st.dupRun = false; render(); };
+    if ($('dupText')) $('dupText').oninput = function (e) { st.dupText = e.target.value; };
+    if ($('dupCopy')) $('dupCopy').onclick = function () {
+      copyRows([['Qté', 'SKU', 'Plat', 'Remplace']].concat((st._dupFinal || []).map(function (x) { return [x[0], x[1].code, x[1].nom, x[2] ? x[2].code + ' ' + x[2].nom : '']; })), 'le colis proposé');
+    };
     if ($('cmp')) $('cmp').onchange = function (e) { st.cmp = e.target.value; render(); };
     app.querySelectorAll('[data-qc]').forEach(function (b) { b.onclick = function () { st.qcType = b.getAttribute('data-qc'); render(); }; });
     if ($('qcb')) $('qcb').onchange = function (e) { var s = JSON.parse(JSON.stringify(M.settings)); s.showQcBadges = e.target.checked; settings = s; saveSettings(s, init); };
