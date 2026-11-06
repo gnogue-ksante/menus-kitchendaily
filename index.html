@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menus KitchenDaily</title>
+<style>
+:root{--g:#1B7F39;--g2:#14602b;--o:#FF7A00;--b:#FBF4E9;--ink:#1d2a22;--mut:#5f6b63;--line:#e6ded0;--red:#c62828;--redbg:#fde8e8;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--b);color:var(--ink);font-size:14px}
+button{font:inherit;cursor:pointer}
+header{background:var(--g);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
+header .src{font-size:12px;opacity:.85;flex:1;min-width:160px}
+.hbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:18px;padding:6px 12px;font-size:13px}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 16px 40px}
+.sticky{position:sticky;top:0;z-index:20;background:var(--b);padding:10px 0 8px;border-bottom:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{border:1.5px solid var(--g);background:#fff;color:var(--g);border-radius:20px;padding:7px 14px;font-weight:700;font-size:13px}
+.pill.on{background:var(--g);color:#fff}
+.seg{display:inline-flex;background:#fff;border:1.5px solid var(--g);border-radius:22px;padding:3px;gap:3px}
+.seg button{border:none;background:none;border-radius:18px;padding:8px 18px;font-weight:700;font-size:14px;color:var(--g)}
+.seg button.on{background:var(--g);color:#fff}
+.weeknav{display:flex;align-items:center;gap:6px;margin-top:8px}
+.weeknav button{border:1px solid var(--line);background:#fff;border-radius:50%;width:34px;height:34px;font-size:15px;color:var(--g)}
+.weeknav button:disabled{opacity:.35;cursor:default}
+.wlabel{font-weight:700;font-size:15px;padding:0 6px}
+.today{font-size:12px;color:var(--o);background:none;border:none;text-decoration:underline}
+.tabs{display:flex;gap:4px;margin-top:10px;border-bottom:2px solid var(--line)}
+.tab{background:none;border:none;padding:8px 12px;font-weight:700;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab.on{color:var(--g);border-color:var(--o)}
+.tab.qc{margin-left:auto;font-weight:400;font-size:12px}
+.alerts{background:#fff4e5;border:1px solid #ffd3a3;border-left:5px solid var(--o);border-radius:8px;padding:8px 12px;margin:12px 0;font-size:13px}
+.alerts div{margin:2px 0}
+.ok{background:#eaf6ee;border:1px solid #bfe3ca;border-left:5px solid var(--g);border-radius:8px;padding:8px 12px;margin:12px 0;font-size:13px;color:var(--g2)}
+.summary{display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+.big{font-size:22px;font-weight:700;color:var(--g)}
+.bal{flex:1;min-width:220px}
+.balbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#eee;margin-top:4px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:4px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.stat{font-size:12px;color:var(--mut)} .stat b{font-size:15px;color:var(--ink)}
+.search{flex:1;min-width:180px;border:1px solid var(--line);border-radius:20px;padding:8px 14px;font-size:14px;background:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 11px;font-size:13px;color:var(--ink)}
+.chip .n{color:var(--mut);margin-left:3px}
+.chip.on{background:var(--o);border-color:var(--o);color:#fff}.chip.on .n{color:#fff}
+.chip.zero{opacity:.45}
+.glabel{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin:8px 0 2px}
+.more{background:none;border:none;color:var(--g);font-weight:700;padding:4px 0}
+.result{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0 6px;font-size:13px;color:var(--mut)}
+.link{background:none;border:none;color:var(--g);text-decoration:underline;padding:0;font-size:13px}
+.btn{border:1px solid var(--g);background:#fff;color:var(--g);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700}
+.btn.primary{background:var(--g);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:box-shadow .15s}
+.card:hover{box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.card h3{font-size:14px;margin:0;line-height:1.3}
+.meta{font-size:12px;color:var(--mut)}
+.nut{display:flex;gap:10px;font-size:12px}.nut b{color:var(--ink)}
+.badges{display:flex;gap:4px;flex-wrap:wrap}
+.badge{font-size:11px;border-radius:10px;padding:2px 8px;background:#eef3ef;color:var(--g2);font-weight:700}
+.badge.perm{background:var(--g);color:#fff}
+.badge.prog{background:#fff1e2;color:#b45300}
+.badge.warn{background:var(--redbg);color:var(--red)}
+.alg{display:flex;gap:4px;flex-wrap:wrap}
+.alg span{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--mut);background:#fafafa}
+.alg span.na{border-color:#ffd3a3;color:#b45300;background:#fff7ee}
+.empty{background:#fff;border:1px dashed var(--line);border-radius:10px;padding:24px;text-align:center;color:var(--mut)}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:#f4efe5;font-size:12px;position:sticky;top:0}
+td.l,th.l{text-align:left}
+td.low{background:var(--redbg);color:var(--red);font-weight:700}
+td.cur{outline:2px solid var(--o);outline-offset:-2px}
+td.click{cursor:pointer}
+.tablewrap{overflow:auto;max-height:70vh;border-radius:10px;border:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.col{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+.col h4{margin:0 0 8px;font-size:13px;color:var(--g)}
+.col li{margin:4px 0;font-size:13px}
+select,input[type=number]{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;background:#fff}
+input[type=number]{width:70px}
+.modal{position:fixed;inset:0;background:rgba(20,30,25,.45);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:30px 12px}
+.modal.on{display:flex}
+.sheet{background:#fff;border-radius:14px;max-width:720px;width:100%;padding:18px 20px;position:relative}
+.sheet h2{margin:0 0 6px;font-size:18px;color:var(--g)}
+.x{position:absolute;right:12px;top:10px;border:none;background:none;font-size:22px;color:var(--mut)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px}
+.sec{margin-top:14px}.sec h4{margin:0 0 6px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.set{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;font-size:13px}
+.note{font-size:12px;color:var(--mut)}
+.qcchips .chip{font-size:12px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:60;max-width:90%}
+.loading{padding:60px;text-align:center;color:var(--mut)}
+@media (max-width:700px){.sticky{position:static}.cols{grid-template-columns:1fr}.tab{padding:8px 7px;font-size:13px}.kv{grid-template-columns:1fr}header h1{font-size:16px}}
+@media print{header,.sticky .tabs,.weeknav button,.today,.toolbar,.chips,.glabel,.more,.search,.alerts,.ok,.tab{display:none!important}.sticky{position:static}.card{break-inside:avoid;box-shadow:none}body{background:#fff}.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Menus KitchenDaily</h1>
+  <div class="src" id="src"></div>
+  <button class="hbtn" id="refresh">↻ Rafraîchir</button>
+  <button class="hbtn" id="openSettings">⚙ Réglages</button>
+</header>
+<div class="wrap" id="app"><div class="loading">Chargement des menus…</div></div>
+
+<div class="modal" id="dishModal"><div class="sheet" id="dishSheet"></div></div>
+<div class="modal" id="setModal"><div class="sheet" id="setSheet"></div></div>
+
+<script>
+/* Moteur commun « Menus KitchenDaily » : utilisé tel quel par la page (navigateur) et par Apps Script (Core.gs). */
+function MenuCore() {
+  var PROGRAMS = [
+    { id: 'nut', group: 'KY Minceur', short: 'Nutri+', label: 'Minceur Nutri+', plan: 'p_nut', gam: 'g_nut' },
+    { id: 'act', group: 'KY Minceur', short: 'Activ+', label: 'Minceur Activ+', plan: 'p_act', gam: 'g_act' },
+    { id: 'ess', group: 'KY Minceur', short: 'Essentiel', label: 'Minceur Essentiel', plan: 'p_ess', gam: 'g_ess' },
+    { id: 'con', group: 'KY Minceur', short: 'Consolidation', label: 'Minceur Consolidation', plan: 'p_con', gam: 'g_con' },
+    { id: 'ky', group: 'KY Quotidien', short: 'KY Quotidien', label: 'KY Quotidien', plan: 'p_ky', gam: 'g_ky' }
+  ];
+
+  var ALLERGENS = [
+    { id: 'gluten', label: 'gluten', syn: ['gluten', 'ble', 'froment', 'orge', 'seigle', 'avoine', 'epeautre'] },
+    { id: 'lait', label: 'lait', syn: ['lait', 'lactose', 'laitier', 'produit laitier', 'creme', 'fromage', 'beurre'] },
+    { id: 'oeuf', label: 'œuf', syn: ['oeuf', 'oeufs', 'oeuv'] },
+    { id: 'soja', label: 'soja', syn: ['soja', 'soya'] },
+    { id: 'celeri', label: 'céleri', syn: ['celeri'] },
+    { id: 'moutarde', label: 'moutarde', syn: ['moutarde'] },
+    { id: 'sulfites', label: 'sulfites', syn: ['sulfite', 'anhydride sulfureux'] },
+    { id: 'coque', label: 'fruits à coque', syn: ['fruit a coque', 'fruits a coque', 'fruit a coques', 'fruits a coques', 'coque', 'noix', 'amande', 'noisette', 'pignon', 'cajou', 'pistache'] },
+    { id: 'sesame', label: 'sésame', syn: ['sesame'] },
+    { id: 'poisson', label: 'poisson', syn: ['poisson'] },
+    { id: 'crustaces', label: 'crustacés', syn: ['crustace'] },
+    { id: 'mollusques', label: 'mollusques', syn: ['mollusque'] },
+    { id: 'arachide', label: 'arachide', syn: ['arachide', 'cacahuete'] },
+    { id: 'lupin', label: 'lupin', syn: ['lupin'] },
+    { id: 'porc', label: 'porc', syn: ['porc'] }
+  ];
+  // Mots reconnus mais qui ne sont pas des allergènes (préférences)
+  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet'];
+
+  var DEFAULT_SETTINGS = {
+    criteria: { protplus: 30, leger: 350, keto: 15, lowcarb: 30, lowsalt: 2 },
+    minimums: { total: 15, veggie: 3, protplus: 0, leger: 0, lowcarb: 0, keto: 0, lowsalt: 0,
+                sans_gluten: 4, sans_lait: 4 },
+    showQcBadges: false,
+    horizon: 12
+  };
+
+  function nk(s) {
+    return String(s == null ? '' : s).replace(/œ/gi, 'oe').replace(/æ/gi, 'ae')
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  function singular(w) { return w.split(' ').map(function (x) { return x.length > 3 ? x.replace(/[sx]$/, '') : x; }).join(' '); }
+  function num(v) {
+    if (v === '' || v == null) return null;
+    if (typeof v === 'number') return v;
+    var n = parseFloat(String(v).replace(',', '.').replace(/[^0-9.\-]/g, ''));
+    return isNaN(n) ? null : n;
+  }
+  function round(v, d) { if (v == null) return null; var p = Math.pow(10, d || 0); return Math.round(v * p) / p; }
+  function isActif(v) { return nk(v) === 'actif'; }
+  function isPresent(v) { return nk(v) === 'present'; }
+  function isValide(v) { return /^valide$/.test(nk(v)); }
+
+  var SYN = {};
+  ALLERGENS.forEach(function (a) { a.syn.forEach(function (s) { SYN[singular(nk(s))] = a.id; }); });
+
+  function parseAllergens(txt) {
+    var raw = nk(txt);
+    var res = { set: {}, unknown: [], empty: raw === '' };
+    if (res.empty) return res;
+    raw.replace(/[()]/g, ',').split(/[,;.\/+]|\bet\b/).forEach(function (t) {
+      t = t.trim(); if (!t) return;
+      var s = singular(t);
+      if (SYN[s]) { res.set[SYN[s]] = true; return; }
+      if (KNOWN_OTHER.indexOf(s) >= 0) { res.set['_' + s] = true; return; }
+      res.unknown.push(t);
+    });
+    return res;
+  }
+
+  function parseDates(label) {
+    var m = String(label).match(/(\d{1,2})\/(\d{1,2})\/(\d{4}).*?(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (!m) return null;
+    return { start: new Date(+m[3], +m[2] - 1, +m[1]), end: new Date(+m[6], +m[5] - 1, +m[4]) };
+  }
+  function dd(d) { return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2); }
+  function menuNum(v) {
+    var s = nk(v);
+    if (/^menu\s*0/.test(s) || /permanent/.test(s)) return 0;
+    var m = s.match(/^menu\s*(\d+)/);
+    return m ? +m[1] : null; // Surplus et autres : pas dans les menus
+  }
+
+  // Libellés saisis différemment (« Pommes de terre » / « Pomme de terre », espaces…) : regroupés
+  function canonFacet(values) {
+    var groups = {};
+    values.forEach(function (v) {
+      var s = String(v || '').trim(); if (!s) return;
+      var k = singular(nk(s));
+      groups[k] = groups[k] || {};
+      groups[k][s] = (groups[k][s] || 0) + 1;
+    });
+    var map = {}, variants = [];
+    Object.keys(groups).forEach(function (k) {
+      var forms = Object.keys(groups[k]).sort(function (a, b) { return groups[k][b] - groups[k][a]; });
+      map[k] = forms[0];
+      if (forms.length > 1) variants.push(forms);
+    });
+    return { label: function (v) { var s = String(v || '').trim(); return s ? map[singular(nk(s))] : ''; }, variants: variants };
+  }
+
+  function build(raw, userSettings) {
+    var S = mergeSettings(userSettings);
+    var issues = [];
+    function issue(type, code, nom, detail, where) { issues.push({ type: type, code: code || '', nom: nom || '', detail: detail, where: where }); }
+
+    // ---- Semaines
+    var seen = {}, weeks = [], dupCal = 0;
+    (raw.calendar || []).forEach(function (r) {
+      var d = parseDates(r[2]); var m = menuNum(r[1]);
+      if (!d || m == null) return;
+      var key = 'S' + r[0] + '-' + d.start.getFullYear();
+      if (seen[key]) { dupCal++; if (seen[key].menu !== m) issue('Calendrier', '', '', 'S' + r[0] + ' : deux menus différents (Menu ' + seen[key].menu + ' et Menu ' + m + ')', 'Plan de menu › Schéma Appro'); return; }
+      var w = { key: key, num: +r[0], year: d.start.getFullYear(), menu: m, start: d.start, end: d.end,
+                label: 'S' + r[0] + ' · ' + dd(d.start) + ' → ' + dd(d.end) + ' · Menu ' + m };
+      seen[key] = w; weeks.push(w);
+    });
+    weeks.sort(function (a, b) { return a.start - b.start; });
+    if (dupCal) issue('Calendrier', '', '', 'Le calendrier est saisi 2 fois (' + dupCal + ' lignes en double). Sans effet sur l’app, mais à nettoyer pour éviter des écarts.', 'Plan de menu › Schéma Appro');
+
+    // ---- Gamme
+    var gam = {}, gamCount = {};
+    (raw.gamme || []).forEach(function (g) { gamCount[g.sku] = (gamCount[g.sku] || 0) + 1; if (!gam[g.sku]) gam[g.sku] = g; });
+    Object.keys(gamCount).forEach(function (k) { if (gamCount[k] > 1) issue('Doublon', k, gam[k].nom, 'Code présent ' + gamCount[k] + ' fois dans la gamme', 'GAMME PRODUITS › KD_KY_DB'); });
+
+    // ---- Plats
+    var planRows = raw.plan || [];
+    var fProt = canonFacet(planRows.map(function (p) { return p.prot; }));
+    var fGarn = canonFacet(planRows.map(function (p) { return p.garn; }));
+    var fClasse = canonFacet(planRows.map(function (p) { return p.classe; }));
+    var fSpec = canonFacet((raw.gamme || []).map(function (g) { return g.spec; }));
+    var fSous = canonFacet(planRows.map(function (p) { return p.souscat; }));
+
+    var dishes = [], codeSeen = {}, nameSeen = {};
+    planRows.forEach(function (p) {
+      var m = menuNum(p.menu);
+      if (m == null) return;
+      var code = String(p.code || '').trim();
+      if (!code) { issue('Code manquant', p.ancien, p.nom, 'Plat en ' + p.menu + ' sans « Nouveau code » : impossible à relier à la gamme, non affiché', 'Plan de menu › GAMME SAISON 1 AH'); return; }
+      if (codeSeen[code]) { issue('Doublon', code, p.nom, 'Code présent plusieurs fois dans le plan (' + codeSeen[code] + ' et ' + p.menu + ')', 'Plan de menu › GAMME SAISON 1 AH'); return; }
+      codeSeen[code] = p.menu;
+      var g = gam[code] || null;
+      var allergTxt = p.allerg || (g ? g.allerg : '');
+      var al = parseAllergens(allergTxt);
+      var d = {
+        code: code, nom: p.nom || (g && g.nom) || code, menu: m, permanent: m === 0,
+        classe: fClasse.label(p.classe), statut: p.statut, progres: String(p.progres || '').trim(),
+        validated: isValide(p.progres), saison: p.saison,
+        souscat: fSous.label(p.souscat), prot: fProt.label(p.prot), garn: fGarn.label(p.garn),
+        spec: g ? fSpec.label(g.spec) : '', piment: !!String(p.piment || '').trim(),
+        desc: g ? (g.desc_pop || g.desc_menu || '') : '', descMenu: g ? g.desc_menu : '',
+        ingr: p.ingr || (g ? g.ingr : ''),
+        poids: num(p.poids), kcal: num(p.kcal), mg: num(p.mg), ags: num(p.ags), glu: num(p.glu),
+        suc: num(p.suc), fib: num(p.fib), pro: num(p.pro), sel: num(p.sel),
+        allergTxt: allergTxt, allergens: al.set, allergKnown: !al.empty,
+        programs: {}, planPrograms: {}, qc: []
+      };
+      if (d.kcal == null && g) d.kcal = num(g.kcal);
+      if (d.pro == null && g) d.pro = num(g.pro);
+      if (d.glu == null && g) d.glu = num(g.glu);
+      if (d.sel == null && g) d.sel = num(g.sel);
+      d.isVeggie = nk(d.souscat) === 'vegetarien';
+      d.hasPorc = !!al.set.porc || nk(d.prot) === 'porc';
+      var where = 'Plan de menu › GAMME SAISON 1 AH';
+
+      PROGRAMS.forEach(function (pg) {
+        var inPlan = isPresent(p[pg.plan]);
+        var inGam = g ? isActif(g[pg.gam]) : inPlan;
+        d.planPrograms[pg.id] = inPlan; d.programs[pg.id] = inGam;
+        if (g && inPlan !== inGam) {
+          var t = pg.label + ' : plan « ' + (p[pg.plan] || 'vide') + ' » / gamme « ' + (g[pg.gam] || 'vide') + ' » (l’app suit la gamme)';
+          d.qc.push(t); issue('Présent vs INACTIF', code, d.nom, t, 'Plan › col. ' + PROGRAMS_COL[pg.id] + ' / GAMME › ' + GAMME_COL[pg.id]);
+        }
+      });
+
+      if (!g) { d.qc.push('absent de la gamme'); issue('Absent de la gamme', code, d.nom, 'Code introuvable dans KD_KY_DB', 'GAMME PRODUITS › KD_KY_DB'); }
+      if (al.empty) { d.qc.push('allergènes non renseignés'); issue('Allergènes vides', code, d.nom, 'Préférences alimentaires vides : le plat n’est compté dans aucun filtre « Sans … »', where + ' › Préférences alimentaires'); }
+      if (al.unknown.length) issue('Allergène non reconnu', code, d.nom, 'Mot(s) non reconnu(s) : « ' + al.unknown.join(' », « ') + ' » (texte : ' + allergTxt + ')', where + ' › Préférences alimentaires');
+      if (g && p.allerg && g.allerg && !sameAllerg(p.allerg, g.allerg)) issue('Allergènes différents', code, d.nom, 'Plan : « ' + p.allerg + ' » / Gamme : « ' + g.allerg + ' »', 'Les 2 fichiers › Préférences alimentaires');
+      if (g && g.nom && nk(g.nom) !== nk(p.nom)) issue('Nom différent', code, d.nom, 'Plan : « ' + p.nom + ' » / Gamme : « ' + g.nom + ' »', 'Les 2 fichiers › Nom PRODUIT');
+      if (g && num(g.kcal) != null && num(p.kcal) != null && Math.abs(num(g.kcal) - num(p.kcal)) > Math.max(5, 0.02 * num(p.kcal)))
+        issue('Kcal différentes', code, d.nom, 'Plan : ' + round(num(p.kcal)) + ' kcal / Gamme : ' + round(num(g.kcal)) + ' kcal', 'Les 2 fichiers › ENERGIE KCAL / plat');
+      if (!d.validated) { d.qc.push('avancement : ' + (d.progres || 'vide')); issue('Pas validé', code, d.nom, 'En ' + p.menu + ' avec Progrès = « ' + (d.progres || 'vide') + ' »', where + ' › Progrès'); }
+      if (nk(p.statut) !== 'valide') issue('Statut', code, d.nom, 'Statut = « ' + (p.statut || 'vide') + ' »', where + ' › Statut');
+      ['kcal', 'pro', 'glu', 'sel'].forEach(function (k) { if (d[k] == null) issue('Nutrition manquante', code, d.nom, 'Valeur « ' + k + ' / plat » vide : le plat n’entre pas dans les filtres nutritionnels', where); });
+      if (nk(d.classe) === 'vegetarien' && !d.isVeggie) issue('Végétarien incohérent', code, d.nom, 'Classe Végétarien mais sous-catégorie « ' + d.souscat + ' »', where + ' › Sous catégorie');
+      if (d.isVeggie && (al.set.poisson || al.set.crustaces || al.set._viande || al.set._volaille || al.set.porc)) issue('Végétarien incohérent', code, d.nom, 'Sous-catégorie Végétarien mais allergènes : ' + allergTxt, where + ' › Préférences alimentaires');
+      if (!d.prot) issue('Champ vide', code, d.nom, 'Type de protéine vide', where + ' › TYPE DE PROTEINE');
+      if (!d.garn) issue('Champ vide', code, d.nom, 'Garniture vide', where + ' › GARNITURE');
+      if (g && !d.spec) issue('Champ vide', code, d.nom, 'Spécialité vide', 'GAMME PRODUITS › SPECIALITE');
+      var nn = nk(d.nom);
+      if (nameSeen[nn]) issue('Doublon de nom', code, d.nom, 'Même nom que ' + nameSeen[nn], where + ' › Nom PRODUIT'); else nameSeen[nn] = code;
+      dishes.push(d);
+    });
+    // Plats permanents ou de menu présents dans aucun programme
+    dishes.forEach(function (d) { if (!PROGRAMS.some(function (pg) { return d.programs[pg.id]; })) issue('Aucun programme', d.code, d.nom, 'Plat en menu mais INACTIF dans les 5 programmes', 'GAMME PRODUITS › KD_KY_DB'); });
+
+    [['Type de protéine', fProt], ['Garniture', fGarn], ['Classe', fClasse], ['Spécialité', fSpec], ['Sous-catégorie', fSous]].forEach(function (x) {
+      x[1].variants.forEach(function (v) { issue('Libellé saisi différemment', '', '', x[0] + ' : « ' + v.join(' » / « ') + ' » (regroupés dans l’app)', 'Colonne ' + x[0]); });
+    });
+    // Classes proches (ex. « Riche en protéines & fibres » vs « … & source de fibres »)
+    var classes = uniq(dishes.map(function (d) { return d.classe; }));
+    classes.forEach(function (a) { classes.forEach(function (b) { if (a < b && nk(b).indexOf(nk(a).split('&')[0].trim()) === 0 && nk(a).split('&')[0] === nk(b).split('&')[0]) issue('Libellé saisi différemment', '', '', 'Classe : « ' + a + ' » / « ' + b + ' » (2 valeurs pour sans doute la même classe)', 'Plan de menu › Classe'); }); });
+
+    var model = {
+      settings: S, programs: PROGRAMS, allergens: ALLERGENS, weeks: weeks, dishes: dishes, issues: issues,
+      meta: raw.meta || {}, filters: buildFilters(S),
+      facets: {
+        prot: { label: 'Protéine', values: uniq(dishes.map(function (d) { return d.prot; })) },
+        garn: { label: 'Garniture', values: uniq(dishes.map(function (d) { return d.garn; })) },
+        spec: { label: 'Spécialité', values: uniq(dishes.map(function (d) { return d.spec; })) },
+        classe: { label: 'Classe', values: uniq(dishes.map(function (d) { return d.classe; })) }
+      }
+    };
+    model.currentWeekIndex = function (today) {
+      today = today || new Date(); today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      for (var i = 0; i < weeks.length; i++) if (weeks[i].start <= today && today <= weeks[i].end) return i;
+      for (i = 0; i < weeks.length; i++) if (weeks[i].start > today) return i;
+      return weeks.length - 1;
+    };
+    model.weekDishes = function (wi, progId) {
+      var w = weeks[wi]; if (!w) return [];
+      return dishes.filter(function (d) { return (d.menu === 0 || d.menu === w.menu) && d.programs[progId]; })
+        .sort(function (a, b) { return (a.permanent - b.permanent) || a.nom.localeCompare(b.nom, 'fr'); });
+    };
+    model.filterById = function (id) { for (var i = 0; i < model.filters.length; i++) if (model.filters[i].id === id) return model.filters[i]; return null; };
+    model.count = function (list, filterId) {
+      if (filterId === 'total') return list.length;
+      var f = model.filterById(filterId); return f ? list.filter(f.test).length : 0;
+    };
+    model.alerts = function (wi, progId) {
+      var list = model.weekDishes(wi, progId), out = [];
+      Object.keys(S.minimums).forEach(function (fid) {
+        var min = +S.minimums[fid] || 0; if (!min) return;
+        var n = model.count(list, fid);
+        if (n < min) out.push({ week: weeks[wi], program: progLabel(progId), filterId: fid, label: filterLabel(model, fid), count: n, min: min });
+      });
+      return out;
+    };
+    model.alertsRange = function (fromIdx, n) {
+      var out = [];
+      for (var i = fromIdx; i < Math.min(weeks.length, fromIdx + n); i++)
+        PROGRAMS.forEach(function (pg) { out = out.concat(model.alerts(i, pg.id)); });
+      return out;
+    };
+    model.filterLabel = function (fid) { return filterLabel(model, fid); };
+    return model;
+  }
+
+  var PROGRAMS_COL = { ess: 'Prgm KD ESSENTIEL', nut: 'Prgm KD NUTRI+', act: 'Prgm KD ACTIV +', con: 'Prgm KD CONSOLIDATION', ky: 'Prgm KY EQUILIBRE' };
+  var GAMME_COL = { ess: 'GAMME KD ESSENTIEL', nut: 'GAMME KD NUTRI +', act: 'GAMME KD ACTIV +', con: 'GAMME KD CONSOLIDATION', ky: 'GAMME KY QUOTIDIEN' };
+
+  function progLabel(id) { for (var i = 0; i < PROGRAMS.length; i++) if (PROGRAMS[i].id === id) return PROGRAMS[i].label; return id; }
+  function filterLabel(model, fid) { if (fid === 'total') return 'plats au total'; var f = model.filterById(fid); return f ? f.label.toLowerCase() : fid; }
+  function uniq(a) { var o = {}; a.forEach(function (x) { if (x) o[x] = 1; }); return Object.keys(o).sort(function (x, y) { return x.localeCompare(y, 'fr'); }); }
+  function sameAllerg(a, b) {
+    var x = parseAllergens(a).set, y = parseAllergens(b).set;
+    function k(o) { return Object.keys(o).filter(function (z) { return z.charAt(0) !== '_'; }).sort().join(); }
+    var kx = k(x), ky = k(y);
+    return kx === ky;
+  }
+
+  function buildFilters(S) {
+    var c = S.criteria;
+    var f = [
+      { id: 'veggie', group: 'regime', label: 'Végétarien', hint: 'Sans viande ni poisson', test: function (d) { return d.isVeggie; } },
+      { id: 'protplus', group: 'regime', label: 'Protéine+', hint: '> ' + c.protplus + ' g de protéines / plat', test: function (d) { return d.pro != null && d.pro > c.protplus; } },
+      { id: 'leger', group: 'regime', label: 'Repas léger', hint: '< ' + c.leger + ' kcal / plat', test: function (d) { return d.kcal != null && d.kcal < c.leger; } },
+      { id: 'lowcarb', group: 'regime', label: 'Faible en glucides', hint: '< ' + c.lowcarb + ' g de glucides / plat', test: function (d) { return d.glu != null && d.glu < c.lowcarb; } },
+      { id: 'keto', group: 'regime', label: 'Keto', hint: '< ' + c.keto + ' g de glucides / plat', test: function (d) { return d.glu != null && d.glu < c.keto; } },
+      { id: 'lowsalt', group: 'regime', label: 'Low salt', hint: '< ' + c.lowsalt + ' g de sel / plat', test: function (d) { return d.sel != null && d.sel < c.lowsalt; } }
+    ];
+    ALLERGENS.forEach(function (a) {
+      f.push({ id: 'sans_' + a.id, group: 'sans', label: 'Sans ' + a.label, hint: 'Allergènes renseignés et sans ' + a.label,
+        test: a.id === 'porc'
+          ? function (d) { return d.allergKnown && !d.hasPorc; }
+          : function (d) { return d.allergKnown && !d.allergens[a.id]; } });
+    });
+    return f;
+  }
+
+  function mergeSettings(u) {
+    var S = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    if (u && typeof u === 'object') {
+      ['criteria', 'minimums'].forEach(function (k) { if (u[k]) Object.keys(u[k]).forEach(function (x) { var v = parseFloat(u[k][x]); if (!isNaN(v)) S[k][x] = v; }); });
+      if (u.showQcBadges != null) S.showQcBadges = !!u.showQcBadges;
+      if (u.horizon) S.horizon = Math.max(4, Math.min(26, +u.horizon || 12));
+    }
+    return S;
+  }
+
+  return { build: build, DEFAULT_SETTINGS: DEFAULT_SETTINGS, PROGRAMS: PROGRAMS, ALLERGENS: ALLERGENS, parseAllergens: parseAllergens, nk: nk };
+}
+
+</script>
+<script>
+window.__BOOT__ = { api: "" };
+</script>
+<script>
+(function () {
+  var Core = MenuCore();
+  var M, raw, settings;
+  var st = { prog: 'nut', wi: 0, tab: 'menu', filters: {}, facets: {}, q: '', more: false, planMode: 'filtre', planFilter: 'total', cmp: 'ky', qcType: '' };
+  var COLORS = { 'Volaille': '#F4B860', 'Viande': '#B5472F', 'Poisson': '#3A7CA5', 'Végétarien': '#1B7F39' };
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fmt(v, d) { return v == null ? '–' : (Math.round(v * Math.pow(10, d || 0)) / Math.pow(10, d || 0)).toString().replace('.', ','); }
+
+  // ---------- Environnement (version autonome / Apps Script)
+  var BOOT = window.__BOOT__ || {};
+  var gas = typeof google !== 'undefined' && google.script && google.script.run;
+  var API = BOOT.api || '';
+  function getKey() { try { return localStorage.getItem('menusKY.key') || ''; } catch (e) { return window.__key || ''; } }
+  function setKey(k) { window.__key = k; try { localStorage.setItem('menusKY.key', k); } catch (e) {} }
+  function askKey(msg) {
+    $('app').innerHTML = '<div class="empty" style="max-width:420px;margin:40px auto"><h2 style="color:var(--g);margin-top:0">Code d\u2019accès</h2>' +
+      '<p>' + esc(msg || 'Saisis le code d\u2019accès communiqué par Guillaume.') + '</p><form id="kf" class="row" style="justify-content:center">' +
+      '<input id="k" class="search" style="max-width:220px" autocomplete="off" placeholder="Code"><button class="btn primary">Valider</button></form></div>';
+    $('kf').onsubmit = function (e) { e.preventDefault(); setKey($('k').value.trim()); loadAll(false); };
+  }
+  function apiGet(force, cb) {
+    fetch(API + '?action=data&key=' + encodeURIComponent(getKey()) + (force ? '&refresh=1' : '') + '&t=' + Date.now())
+      .then(function (r) { return r.json(); }).then(cb)
+      .catch(function (e) { $('app').innerHTML = '<div class="empty">Impossible de lire les données (' + esc(e.message) + '). Réessaie dans un instant.</div>'; });
+  }
+  function loadAll(force) {
+    if (API) {
+      if (!getKey()) return askKey();
+      $('app').innerHTML = '<div class="loading">Lecture des fichiers R&D…</div>';
+      apiGet(force, function (res) {
+        if (!res.ok) return res.error === 'code' ? askKey('Code incorrect, réessaie.') : ($('app').innerHTML = '<div class="empty">Erreur : ' + esc(res.error) + '</div>');
+        raw = res.data; settings = res.settings; init();
+      });
+      return;
+    }
+    if (gas) {
+      $('app').innerHTML = '<div class="loading">Lecture des Google Sheets…</div>';
+      google.script.run.withSuccessHandler(function (res) { res = typeof res === 'string' ? JSON.parse(res) : res; raw = res.data; settings = res.settings; init(); })
+        .withFailureHandler(function (e) { $('app').innerHTML = '<div class="empty">Erreur de lecture des Sheets : ' + esc(e.message) + '</div>'; })
+        .getData(!!force);
+    } else {
+      raw = BOOT.data;
+      try { settings = JSON.parse(localStorage.getItem('menusKY.settings') || 'null'); } catch (e) { settings = null; }
+      init();
+    }
+  }
+  function saveSettings(s, cb) {
+    if (API) {
+      fetch(API, { method: 'POST', body: JSON.stringify({ action: 'settings', key: getKey(), settings: s }) })
+        .then(function (r) { return r.json(); })
+        .then(function (r) { if (!r.ok) toast('Réglages non enregistrés : ' + r.error); cb && cb(); })
+        .catch(function () { toast('Réglages non enregistrés (connexion).'); cb && cb(); });
+      return;
+    }
+    if (gas) google.script.run.withSuccessHandler(cb).saveSettings(JSON.stringify(s));
+    else { try { localStorage.setItem('menusKY.settings', JSON.stringify(s)); } catch (e) {} cb && cb(); }
+  }
+  function init() {
+    M = Core.build(raw, settings);
+    if (!st._init) { st.wi = M.currentWeekIndex(); st._init = true; }
+    st.wi = Math.max(0, Math.min(st.wi, M.weeks.length - 1));
+    var meta = M.meta || {};
+    $('src').textContent = (API || gas ? 'Données en direct des fichiers R&D' : 'Version autonome · ' + (meta.source || '')) + ' · lu le ' + (meta.generatedAt || '');
+    render();
+  }
+  $('refresh').onclick = function () { if (API || gas) loadAll(true); else toast('Version autonome : données figées au ' + ((M && M.meta.generatedAt) || '') + '. La version Apps Script relit les Sheets à chaque ouverture.'); };
+  var canFile = !!gas || !!API || window.self === window.top; // téléchargement et impression bloqués dans un cadre d'aperçu
+  function toast(msg) {
+    var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 3500);
+  }
+  function copyRows(rows, what) {
+    var txt = rows.map(function (r) { return r.map(function (v) { return String(v == null ? '' : v).replace(/[\t\n]+/g, ' '); }).join('\t'); }).join('\n');
+    function fallback() {
+      $('dishSheet').innerHTML = '<button class="x" data-close="dishModal">×</button><h2>Copier ' + esc(what) + '</h2><p class="note">Sélectionne tout (Ctrl+A) puis copie (Ctrl+C).</p><textarea style="width:100%;height:300px">' + esc(txt) + '</textarea>';
+      $('dishModal').classList.add('on');
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { toast(rows.length - 1 + ' ligne(s) copiée(s) : colle-les dans un Sheet ou un mail.'); }, fallback); } catch (e) { fallback(); }
+  }
+  $('openSettings').onclick = openSettings;
+
+  // ---------- Calculs d'affichage
+  function baseList() { return M.weekDishes(st.wi, st.prog); }
+  function activeTests(exceptFacet) {
+    var tests = [];
+    Object.keys(st.filters).forEach(function (id) { if (st.filters[id]) tests.push(M.filterById(id).test); });
+    Object.keys(st.facets).forEach(function (k) {
+      if (k === exceptFacet) return;
+      var vals = st.facets[k]; if (!vals || !vals.length) return;
+      tests.push(function (d) { return vals.indexOf(d[k]) >= 0; });
+    });
+    if (st.q) { var q = Core.nk(st.q); tests.push(function (d) { return Core.nk(d.nom).indexOf(q) >= 0 || Core.nk(d.code).indexOf(q) >= 0; }); }
+    return tests;
+  }
+  function apply(list, tests) { return list.filter(function (d) { return tests.every(function (t) { return t(d); }); }); }
+  function nActive() { var n = 0; Object.keys(st.filters).forEach(function (k) { if (st.filters[k]) n++; }); Object.keys(st.facets).forEach(function (k) { n += (st.facets[k] || []).length; }); return n + (st.q ? 1 : 0); }
+
+  // ---------- Rendu principal
+  function render() {
+    var w = M.weeks[st.wi];
+    var cur = M.programs.filter(function (p) { return p.id === st.prog; })[0] || M.programs[0];
+    var groups = []; M.programs.forEach(function (p) { if (groups.indexOf(p.group) < 0) groups.push(p.group); });
+    var h = '<div class="sticky"><div class="seg">' + groups.map(function (g) {
+      var first = M.programs.filter(function (p) { return p.group === g; })[0];
+      return '<button class="' + (g === cur.group ? 'on' : '') + '" data-group="' + esc(g) + '" data-first="' + first.id + '">' + esc(g) + '</button>';
+    }).join('') + '</div>';
+    var subs = M.programs.filter(function (p) { return p.group === cur.group; });
+    if (subs.length > 1) h += '<div class="row" style="margin-top:8px">' + subs.map(function (p) {
+      return '<button class="pill' + (p.id === st.prog ? ' on' : '') + '" data-prog="' + p.id + '">' + esc(p.short) + '</button>';
+    }).join('') + '</div>';
+    h += '<div class="weeknav"><button id="prev" ' + (st.wi <= 0 ? 'disabled' : '') + ' aria-label="Semaine précédente">◀</button>' +
+      '<span class="wlabel">' + esc(w ? w.label : 'Aucune semaine') + '</span>' +
+      '<button id="next" ' + (st.wi >= M.weeks.length - 1 ? 'disabled' : '') + ' aria-label="Semaine suivante">▶</button>' +
+      (st.wi !== M.currentWeekIndex() ? '<button class="today" id="today">Revenir à cette semaine</button>' : '') + '</div>';
+    var nQc = M.issues.length;
+    h += '<div class="tabs">' + [['menu', 'Menu de la semaine'], ['plan', 'Planning'], ['cmp', 'Comparer']].map(function (t) {
+      return '<button class="tab' + (st.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
+    }).join('') + '<button class="tab qc' + (st.tab === 'qc' ? ' on' : '') + '" data-tab="qc">Contrôle qualité (' + nQc + ')</button></div></div>';
+    if (st.tab === 'menu') h += viewMenu();
+    if (st.tab === 'plan') h += viewPlanning();
+    if (st.tab === 'cmp') h += viewCompare();
+    if (st.tab === 'qc') h += viewQc();
+    $('app').innerHTML = h;
+    bind();
+  }
+
+  function alertBox() {
+    var a = M.alerts(st.wi, st.prog), w = M.weeks[st.wi], p = progName(st.prog);
+    if (!a.length) return '<div class="ok">✓ ' + esc('S' + w.num + ' – ' + p) + ' : tous les seuils sont atteints.</div>';
+    return '<div class="alerts">' + a.map(function (x) {
+      return '<div>⚠ <b>S' + x.week.num + ' – ' + esc(p) + '</b> : seulement ' + x.count + ' ' + esc(x.label) + ' (seuil ' + x.min + ')</div>';
+    }).join('') + '</div>';
+  }
+  function progGroup(id) { for (var i = 0; i < M.programs.length; i++) if (M.programs[i].id === id) return M.programs[i].group; return ''; }
+  function progName(id) { for (var i = 0; i < M.programs.length; i++) if (M.programs[i].id === id) return M.programs[i].label; return id; }
+
+  function viewMenu() {
+    var base = baseList(), tests = activeTests(), list = apply(base, tests);
+    var h = alertBox();
+    // Équilibre de la semaine
+    var by = {}, kc = 0, pr = 0, nk = 0, np = 0;
+    base.forEach(function (d) { by[d.souscat || 'Autre'] = (by[d.souscat || 'Autre'] || 0) + 1; if (d.kcal != null) { kc += d.kcal; nk++; } if (d.pro != null) { pr += d.pro; np++; } });
+    var cats = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
+    h += '<div class="summary"><div><div class="big">' + base.length + '</div><div class="stat">plats cette semaine</div></div>' +
+      '<div class="bal"><div class="stat">Équilibre de la semaine</div><div class="balbar">' + cats.map(function (c) {
+        return '<div title="' + esc(c) + ' : ' + by[c] + '" style="width:' + (100 * by[c] / base.length) + '%;background:' + (COLORS[c] || '#999') + '"></div>';
+      }).join('') + '</div><div class="legend">' + cats.map(function (c) { return '<span><i style="background:' + (COLORS[c] || '#999') + '"></i>' + esc(c) + ' ' + by[c] + '</span>'; }).join('') + '</div></div>' +
+      '<div class="stat">Moyenne<br><b>' + fmt(nk ? kc / nk : null) + '</b> kcal · <b>' + fmt(np ? pr / np : null) + '</b> g prot.</div></div>';
+    // Recherche + filtres
+    h += '<div class="row"><input class="search" id="q" placeholder="Rechercher un plat…" value="' + esc(st.q) + '"></div>';
+    h += chipGroup('Régimes', M.filters.filter(function (f) { return f.group === 'regime'; }), base);
+    var sans = M.filters.filter(function (f) { return f.group === 'sans'; });
+    var main = ['sans_gluten', 'sans_lait', 'sans_oeuf', 'sans_porc', 'sans_poisson', 'sans_crustaces'];
+    h += chipGroup('Allergènes', sans.filter(function (f) { return st.more || main.indexOf(f.id) >= 0 || st.filters[f.id]; }), base);
+    h += '<button class="more" id="more">' + (st.more ? '▴ Moins de filtres' : '▾ Plus de filtres (autres allergènes, protéine, garniture, spécialité, classe)') + '</button>';
+    if (st.more) Object.keys(M.facets).forEach(function (k) { h += facetGroup(k, base); });
+    h += '<div class="result"><span><b>' + list.length + '</b> plat' + (list.length > 1 ? 's' : '') + (nActive() ? ' sur ' + base.length + ' · <button class="link" id="clear">Effacer les filtres</button>' : '') + '</span>' +
+      '<span class="toolbar row"><button class="btn" id="copy">Copier la liste</button>' + (canFile ? '<button class="btn" id="csv">Export CSV</button><button class="btn" id="print">Imprimer / PDF</button>' : '') + '</span></div>';
+    if (!list.length) h += '<div class="empty">Aucun plat ne correspond à ces filtres.</div>';
+    else h += '<div class="grid">' + list.map(card).join('') + '</div>';
+    return h;
+  }
+  function chipGroup(title, filters, base) {
+    var tests = activeTests();
+    return '<div class="glabel">' + title + '</div><div class="chips">' + filters.map(function (f) {
+      var n = apply(base, tests.concat([f.test])).length;
+      return '<button class="chip' + (st.filters[f.id] ? ' on' : '') + (n ? '' : ' zero') + '" data-f="' + f.id + '" title="' + esc(f.hint) + '">' + esc(f.label) + '<span class="n">(' + n + ')</span></button>';
+    }).join('') + '</div>';
+  }
+  function facetGroup(k, base) {
+    var fac = M.facets[k], tests = activeTests(k), sel = st.facets[k] || [];
+    var vals = fac.values.filter(function (v) { return base.some(function (d) { return d[k] === v; }); });
+    if (!vals.length) return '';
+    return '<div class="glabel">' + fac.label + '</div><div class="chips">' + vals.map(function (v) {
+      var n = apply(base, tests).filter(function (d) { return d[k] === v; }).length;
+      return '<button class="chip' + (sel.indexOf(v) >= 0 ? ' on' : '') + (n ? '' : ' zero') + '" data-facet="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '<span class="n">(' + n + ')</span></button>';
+    }).join('') + '</div>';
+  }
+  function allergList(d) {
+    if (!d.allergKnown) return '<span class="na">allergènes non renseignés</span>';
+    var a = M.allergens.filter(function (x) { return d.allergens[x.id]; });
+    return a.length ? a.map(function (x) { return '<span>' + esc(x.label) + '</span>'; }).join('') : '<span>aucun allergène déclaré</span>';
+  }
+  function card(d) {
+    var b = '';
+    if (d.permanent) b += '<span class="badge perm">Permanent</span>';
+    if (!d.validated) b += '<span class="badge prog">' + esc(d.progres || 'Avancement non renseigné') + '</span>';
+    if (d.piment) b += '<span class="badge">🌶 Pimenté</span>';
+    if (M.settings.showQcBadges && d.qc.length) b += '<span class="badge warn" title="' + esc(d.qc.join(' · ')) + '">⚠ incohérence</span>';
+    return '<div class="card" data-code="' + esc(d.code) + '"><div class="badges">' + b + '</div><h3>' + esc(d.nom) + '</h3>' +
+      '<div class="meta">' + [d.classe, d.prot, d.garn].filter(function (x, i, a) { return x && a.indexOf(x) === i; }).map(esc).join(' · ') + '</div>' +
+      '<div class="nut"><span><b>' + fmt(d.kcal) + '</b> kcal</span><span><b>' + fmt(d.pro, 1) + '</b> g prot.</span><span><b>' + fmt(d.glu, 1) + '</b> g gluc.</span></div>' +
+      '<div class="alg">' + allergList(d) + '</div></div>';
+  }
+
+  function viewPlanning() {
+    var from = M.currentWeekIndex(), n = M.settings.horizon, rows = M.weeks.slice(from, from + n);
+    var h = '<div class="row" style="margin:12px 0"><button class="pill' + (st.planMode === 'filtre' ? ' on' : '') + '" data-pm="filtre">Par filtre · ' + esc(progName(st.prog)) + '</button>' +
+      '<button class="pill' + (st.planMode === 'prog' ? ' on' : '') + '" data-pm="prog">Par programme</button>';
+    if (st.planMode === 'prog') h += '<select id="planFilter"><option value="total">Nombre total de plats</option>' + M.filters.map(function (f) {
+      return '<option value="' + f.id + '"' + (st.planFilter === f.id ? ' selected' : '') + '>' + esc(f.label) + '</option>'; }).join('') + '</select>';
+    h += '</div><p class="note">' + n + ' prochaines semaines. Case rouge = sous le seuil réglé. Clique sur une case pour ouvrir la semaine.</p>';
+    var cols, cell;
+    if (st.planMode === 'filtre') {
+      var ids = ['total'].concat(M.filters.filter(function (f) { return f.group === 'regime' || ['sans_gluten', 'sans_lait', 'sans_oeuf', 'sans_porc'].indexOf(f.id) >= 0 || +M.settings.minimums[f.id]; }).map(function (f) { return f.id; }));
+      cols = ids.map(function (id) { return { id: id, label: id === 'total' ? 'Total' : M.filterById(id).label, min: +M.settings.minimums[id] || 0 }; });
+      cell = function (wi, c) { return { n: M.count(M.weekDishes(wi, st.prog), c.id), min: c.min, prog: st.prog, f: c.id }; };
+    } else {
+      var min = +M.settings.minimums[st.planFilter] || 0;
+      cols = M.programs.map(function (p) { return { id: p.id, label: p.label, min: min }; });
+      cell = function (wi, c) { return { n: M.count(M.weekDishes(wi, c.id), st.planFilter), min: min, prog: c.id, f: st.planFilter }; };
+    }
+    h += '<div class="tablewrap"><table><thead><tr><th class="l">Semaine</th>' + cols.map(function (c) { return '<th>' + esc(c.label) + (c.min ? '<br><span class="note">≥ ' + c.min + '</span>' : '') + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (w, k) {
+      var wi = from + k;
+      h += '<tr><td class="l"><b>S' + w.num + '</b> <span class="note">' + esc(w.label.split(' · ').slice(1).join(' · ')) + '</span></td>' + cols.map(function (c) {
+        var x = cell(wi, c), low = x.min && x.n < x.min;
+        return '<td class="click' + (low ? ' low' : '') + (wi === st.wi && x.prog === st.prog ? ' cur' : '') + '" data-go="' + wi + '|' + x.prog + '|' + x.f + '">' + x.n + '</td>';
+      }).join('') + '</tr>';
+    });
+    return h + '</tbody></table></div>';
+  }
+
+  function viewCompare() {
+    var a = baseList(), b = M.weekDishes(st.wi, st.cmp);
+    var inB = {}, inA = {}; b.forEach(function (d) { inB[d.code] = 1; }); a.forEach(function (d) { inA[d.code] = 1; });
+    var both = a.filter(function (d) { return inB[d.code]; }), onlyA = a.filter(function (d) { return !inB[d.code]; }), onlyB = b.filter(function (d) { return !inA[d.code]; });
+    function ul(l) { return l.length ? '<ul style="padding-left:18px;margin:0">' + l.map(function (d) { return '<li><button class="link" data-open="' + esc(d.code) + '">' + esc(d.nom) + '</button>' + (d.permanent ? ' <span class="badge perm">P</span>' : '') + '</li>'; }).join('') + '</ul>' : '<span class="note">Aucun</span>'; }
+    var h = '<div class="row" style="margin:12px 0"><span>Comparer <b>' + esc(progName(st.prog)) + '</b> avec</span><select id="cmp">' + M.programs.filter(function (p) { return p.id !== st.prog; }).map(function (p) {
+      return '<option value="' + p.id + '"' + (p.id === st.cmp ? ' selected' : '') + '>' + esc(p.label) + '</option>'; }).join('') + '</select></div>';
+    return h + '<div class="cols"><div class="col"><h4>En commun (' + both.length + ')</h4>' + ul(both) + '</div><div class="col"><h4>Seulement ' + esc(progName(st.prog)) + ' (' + onlyA.length + ')</h4>' + ul(onlyA) + '</div><div class="col"><h4>Seulement ' + esc(progName(st.cmp)) + ' (' + onlyB.length + ')</h4>' + ul(onlyB) + '</div></div>';
+  }
+
+  function viewQc() {
+    var by = {}; M.issues.forEach(function (i) { by[i.type] = (by[i.type] || 0) + 1; });
+    var list = M.issues.filter(function (i) { return !st.qcType || i.type === st.qcType; });
+    var h = '<p class="note" style="margin-top:12px">Incohérences détectées dans les deux fichiers. Elles se corrigent dans les Sheets : l’app reflète les données au prochain rafraîchissement.</p>';
+    h += '<div class="chips qcchips"><button class="chip' + (!st.qcType ? ' on' : '') + '" data-qc="">Tout<span class="n">(' + M.issues.length + ')</span></button>' + Object.keys(by).sort(function (a, b) { return by[b] - by[a]; }).map(function (t) {
+      return '<button class="chip' + (st.qcType === t ? ' on' : '') + '" data-qc="' + esc(t) + '">' + esc(t) + '<span class="n">(' + by[t] + ')</span></button>'; }).join('') + '</div>';
+    h += '<div class="result"><span>' + list.length + ' ligne(s)</span><span class="toolbar row"><label class="note"><input type="checkbox" id="qcb"' + (M.settings.showQcBadges ? ' checked' : '') + '> Badges « incohérence » sur les cartes</label><button class="btn" id="qccopy">Copier</button>' + (canFile ? '<button class="btn" id="qccsv">Export CSV</button>' : '') + '</span></div>';
+    h += '<div class="tablewrap"><table><thead><tr><th class="l">Type</th><th class="l">Code</th><th class="l">Plat</th><th class="l">Détail</th><th class="l">Où corriger</th></tr></thead><tbody>' + list.map(function (i) {
+      return '<tr><td class="l">' + esc(i.type) + '</td><td class="l">' + (i.code ? '<button class="link" data-open="' + esc(i.code) + '">' + esc(i.code) + '</button>' : '') + '</td><td class="l">' + esc(i.nom) + '</td><td class="l">' + esc(i.detail) + '</td><td class="l note">' + esc(i.where) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+    return h;
+  }
+
+  // ---------- Fiche plat
+  function openDish(code) {
+    var d = M.dishes.filter(function (x) { return x.code === code; })[0]; if (!d) return;
+    var progs = M.programs.filter(function (p) { return d.programs[p.id]; }).map(function (p) { return p.label; });
+    var rows = [['Poids', d.poids, 'g', 0], ['Énergie', d.kcal, 'kcal', 0], ['Matières grasses', d.mg, 'g', 1], ['dont saturées', d.ags, 'g', 1], ['Glucides', d.glu, 'g', 1], ['dont sucres', d.suc, 'g', 1], ['Fibres', d.fib, 'g', 1], ['Protéines', d.pro, 'g', 1], ['Sel', d.sel, 'g', 2]];
+    var tags = M.filters.filter(function (f) { return f.group === 'regime' && f.test(d); }).map(function (f) { return f.label; });
+    var h = '<button class="x" data-close="dishModal">×</button><div class="badges">' + (d.permanent ? '<span class="badge perm">Permanent (Menu 0)</span>' : '<span class="badge">Menu ' + d.menu + '</span>') +
+      (!d.validated ? '<span class="badge prog">' + esc(d.progres || 'Avancement non renseigné') + '</span>' : '<span class="badge">Validé</span>') + '</div>' +
+      '<h2>' + esc(d.nom) + '</h2><div class="meta">' + esc(d.code) + ' · ' + [d.classe, d.souscat, d.prot, d.garn, d.spec, d.saison].filter(Boolean).map(esc).join(' · ') + '</div>';
+    if (d.desc) h += '<div class="sec"><h4>Description</h4><div>' + esc(d.desc) + '</div></div>';
+    h += '<div class="sec"><h4>Allergènes</h4><div class="alg">' + allergList(d) + '</div>' + (d.allergTxt ? '<div class="note" style="margin-top:4px">Texte source : ' + esc(d.allergTxt) + '</div>' : '') + '</div>';
+    if (tags.length) h += '<div class="sec"><h4>Profils</h4><div class="badges">' + tags.map(function (t) { return '<span class="badge">' + esc(t) + '</span>'; }).join('') + '</div></div>';
+    h += '<div class="sec"><h4>Nutrition (par plat)</h4><div class="kv">' + rows.map(function (r) { return '<span>' + r[0] + '</span><b>' + fmt(r[1], r[3]) + ' ' + r[2] + '</b>'; }).join('') + '</div></div>';
+    if (d.ingr) h += '<div class="sec"><h4>Ingrédients</h4><div class="note" style="color:var(--ink)">' + esc(d.ingr) + '</div></div>';
+    h += '<div class="sec"><h4>Programmes (gamme)</h4><div>' + (progs.length ? progs.map(esc).join(' · ') : 'Aucun') + '</div></div>';
+    if (d.qc.length) h += '<div class="sec"><h4>À vérifier</h4><ul style="margin:0;padding-left:18px">' + d.qc.map(function (q) { return '<li class="note">' + esc(q) + '</li>'; }).join('') + '</ul></div>';
+    $('dishSheet').innerHTML = h; $('dishModal').classList.add('on');
+  }
+
+  // ---------- Réglages
+  function openSettings() {
+    var S = M.settings, c = S.criteria;
+    var crit = [['protplus', 'Protéine+ : plus de … g de protéines / plat'], ['leger', 'Repas léger : moins de … kcal / plat'], ['lowcarb', 'Faible en glucides : moins de … g / plat'], ['keto', 'Keto : moins de … g de glucides / plat'], ['lowsalt', 'Low salt : moins de … g de sel / plat']];
+    var h = '<button class="x" data-close="setModal">×</button><h2>Réglages</h2>' +
+      '<div class="sec"><h4>Seuils d’alerte (nombre minimum de plats par semaine et par programme, 0 = pas d’alerte)</h4><div class="set">' +
+      '<span>Plats au total</span><input type="number" min="0" data-min="total" value="' + (S.minimums.total || 0) + '">' +
+      M.filters.map(function (f) { return '<span>' + esc(f.label) + '</span><input type="number" min="0" data-min="' + f.id + '" value="' + (S.minimums[f.id] || 0) + '">'; }).join('') + '</div></div>' +
+      '<div class="sec"><h4>Définition des profils</h4><div class="set">' + crit.map(function (x) { return '<span>' + x[1] + '</span><input type="number" step="0.5" data-crit="' + x[0] + '" value="' + c[x[0]] + '">'; }).join('') + '</div></div>' +
+      '<div class="sec"><h4>Planning</h4><div class="set"><span>Nombre de semaines affichées</span><input type="number" min="4" max="26" id="hz" value="' + S.horizon + '"></div></div>' +
+      '<div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn" id="reset">Valeurs par défaut</button><button class="btn primary" id="save">Enregistrer</button></div>' +
+      '<p class="note">' + (gas ? 'Enregistré dans l’onglet CONFIG_APP : partagé par tous les utilisateurs.' : 'Version autonome : enregistré dans ce navigateur uniquement.') + '</p>';
+    $('setSheet').innerHTML = h; $('setModal').classList.add('on');
+    $('save').onclick = function () {
+      var s = { criteria: {}, minimums: {}, showQcBadges: M.settings.showQcBadges, horizon: +$('hz').value || 12 };
+      $('setSheet').querySelectorAll('[data-min]').forEach(function (i) { s.minimums[i.getAttribute('data-min')] = +i.value || 0; });
+      $('setSheet').querySelectorAll('[data-crit]').forEach(function (i) { s.criteria[i.getAttribute('data-crit')] = +i.value; });
+      settings = s; $('save').textContent = 'Enregistrement…';
+      saveSettings(s, function () { $('setModal').classList.remove('on'); init(); });
+    };
+    $('reset').onclick = function () { settings = null; saveSettings(JSON.parse(JSON.stringify(Core.DEFAULT_SETTINGS)), function () { $('setModal').classList.remove('on'); init(); }); };
+  }
+
+  // ---------- Exports
+  function download(name, rows) {
+    var csv = '﻿' + rows.map(function (r) { return r.map(function (v) { v = v == null ? '' : String(v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';'); }).join('\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function weekRows() {
+    var w = M.weeks[st.wi], list = apply(baseList(), activeTests());
+    return [['Semaine', 'Programme', 'Code', 'Plat', 'Permanent', 'Classe', 'Protéine', 'Garniture', 'Spécialité', 'kcal', 'Protéines (g)', 'Glucides (g)', 'Sel (g)', 'Allergènes', 'Avancement']].concat(list.map(function (d) {
+        return ['S' + w.num + ' ' + w.year, progName(st.prog), d.code, d.nom, d.permanent ? 'Oui' : '', d.classe, d.prot, d.garn, d.spec, fmt(d.kcal), fmt(d.pro, 1), fmt(d.glu, 1), fmt(d.sel, 2), d.allergKnown ? d.allergTxt : 'non renseignés', d.progres];
+      }));
+  }
+  function exportWeek() { var w = M.weeks[st.wi]; download('Menu_' + progName(st.prog).replace(/\W+/g, '_') + '_S' + w.num + '_' + w.year + '.csv', weekRows()); }
+  function qcRows() { return [['Type', 'Code', 'Plat', 'Détail', 'Où corriger']].concat(M.issues.filter(function (i) { return !st.qcType || i.type === st.qcType; }).map(function (i) { return [i.type, i.code, i.nom, i.detail, i.where]; })); }
+
+  // ---------- Événements
+  function bind() {
+    var app = $('app');
+    app.querySelectorAll('[data-group]').forEach(function (b) { b.onclick = function () {
+      var g = b.getAttribute('data-group'), cur = M.programs.filter(function (p) { return p.id === st.prog; })[0];
+      if (cur.group !== g) { st.prog = st.lastByGroup && st.lastByGroup[g] || b.getAttribute('data-first'); if (st.cmp === st.prog) st.cmp = st.prog === 'ky' ? 'nut' : 'ky'; render(); } }; });
+    app.querySelectorAll('[data-prog]').forEach(function (b) { b.onclick = function () { st.prog = b.getAttribute('data-prog'); st.lastByGroup = st.lastByGroup || {}; st.lastByGroup[progGroup(st.prog)] = st.prog; if (st.cmp === st.prog) st.cmp = st.prog === 'ky' ? 'ess' : 'ky'; render(); }; });
+    app.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { st.tab = b.getAttribute('data-tab'); render(); }; });
+    if ($('prev')) $('prev').onclick = function () { st.wi--; render(); };
+    if ($('next')) $('next').onclick = function () { st.wi++; render(); };
+    if ($('today')) $('today').onclick = function () { st.wi = M.currentWeekIndex(); render(); };
+    app.querySelectorAll('[data-f]').forEach(function (b) { b.onclick = function () { var id = b.getAttribute('data-f'); st.filters[id] = !st.filters[id]; render(); }; });
+    app.querySelectorAll('[data-facet]').forEach(function (b) { b.onclick = function () {
+      var k = b.getAttribute('data-facet'), v = b.getAttribute('data-v'), a = st.facets[k] = st.facets[k] || [], i = a.indexOf(v);
+      if (i >= 0) a.splice(i, 1); else a.push(v); render(); }; });
+    if ($('more')) $('more').onclick = function () { st.more = !st.more; render(); };
+    if ($('clear')) $('clear').onclick = function () { st.filters = {}; st.facets = {}; st.q = ''; render(); };
+    if ($('q')) { var t; $('q').oninput = function (e) { clearTimeout(t); var v = e.target.value; t = setTimeout(function () { st.q = v; render(); var q = $('q'); q.focus(); q.setSelectionRange(v.length, v.length); }, 200); }; }
+    if ($('csv')) $('csv').onclick = exportWeek;
+    if ($('copy')) $('copy').onclick = function () { copyRows(weekRows(), 'la liste'); };
+    if ($('qccopy')) $('qccopy').onclick = function () { copyRows(qcRows(), 'les incohérences'); };
+    if ($('print')) $('print').onclick = function () { window.print(); };
+    app.querySelectorAll('.card').forEach(function (c) { c.onclick = function () { openDish(c.getAttribute('data-code')); }; });
+    app.querySelectorAll('[data-open]').forEach(function (c) { c.onclick = function () { openDish(c.getAttribute('data-open')); }; });
+    app.querySelectorAll('[data-pm]').forEach(function (b) { b.onclick = function () { st.planMode = b.getAttribute('data-pm'); render(); }; });
+    if ($('planFilter')) $('planFilter').onchange = function (e) { st.planFilter = e.target.value; render(); };
+    app.querySelectorAll('[data-go]').forEach(function (c) { c.onclick = function () {
+      var p = c.getAttribute('data-go').split('|'); st.wi = +p[0]; st.prog = p[1]; st.filters = {}; st.facets = {}; st.q = '';
+      if (p[2] !== 'total') st.filters[p[2]] = true; st.tab = 'menu'; render(); window.scrollTo(0, 0); }; });
+    if ($('cmp')) $('cmp').onchange = function (e) { st.cmp = e.target.value; render(); };
+    app.querySelectorAll('[data-qc]').forEach(function (b) { b.onclick = function () { st.qcType = b.getAttribute('data-qc'); render(); }; });
+    if ($('qcb')) $('qcb').onchange = function (e) { var s = JSON.parse(JSON.stringify(M.settings)); s.showQcBadges = e.target.checked; settings = s; saveSettings(s, init); };
+    if ($('qccsv')) $('qccsv').onclick = function () { download('Controle_qualite_menus.csv', qcRows()); };
+  }
+  document.querySelectorAll('.modal').forEach(function (m) { m.addEventListener('click', function (e) { if (e.target === m || e.target.getAttribute('data-close')) m.classList.remove('on'); }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.querySelectorAll('.modal.on').forEach(function (m) { m.classList.remove('on'); }); });
+  loadAll(false);
+  if (st.cmp === st.prog) st.cmp = 'ky';
+})();
+</script>
+</body>
+</html>
