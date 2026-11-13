@@ -189,8 +189,12 @@ function MenuCore() {
     { id: 'lupin', label: 'lupin', syn: ['lupin'] },
     { id: 'porc', label: 'porc', syn: ['porc'] }
   ];
+  // Plats vendus sous leur ancien code KD/KT (et non sous le code KU du plan) : la fiche vient de la gamme
+  // sous ce code, le menu vient du plan (ligne dont la colonne « Ancien SKU » porte ce code). Demande du 13/11/2026.
+  var SOLD_UNDER_OLD_CODE = ['KD121', 'KD128', 'KD130', 'KD171', 'KD173', 'KT126'];
+
   // Mots reconnus mais qui ne sont pas des allergènes (préférences)
-  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet', 'coriandre'];
+  var KNOWN_OTHER = ['viande', 'volaille', 'boeuf', 'veau', 'agneau', 'canard', 'dinde', 'poulet', 'coriandre', 'epice', 'vegetarien', 'vegetalien', 'fruit de mer'];
 
   var DEFAULT_SETTINGS = {
     criteria: { protplus: 30, leger: 350, keto: 15, lowcarb: 30, lowsalt: 2 },
@@ -290,11 +294,12 @@ function MenuCore() {
 
     // ---- Plats
     var planRows = raw.plan || [];
-    var fProt = canonFacet(planRows.map(function (p) { return p.prot; }));
-    var fGarn = canonFacet(planRows.map(function (p) { return p.garn; }));
+    var gamRows = raw.gamme || [];
+    var fProt = canonFacet(planRows.map(function (p) { return p.prot; }).concat(gamRows.map(function (g) { return g.prot; })));
+    var fGarn = canonFacet(planRows.map(function (p) { return p.garn; }).concat(gamRows.map(function (g) { return g.garn; })));
     var fClasse = canonFacet(planRows.map(function (p) { return p.classe; }));
     var fSpec = canonFacet((raw.gamme || []).map(function (g) { return g.spec; }));
-    var fSous = canonFacet(planRows.map(function (p) { return p.souscat; }));
+    var fSous = canonFacet(planRows.map(function (p) { return p.souscat; }).concat(gamRows.map(function (g) { return g.souscat; })));
 
     var dishes = [], codeSeen = {}, nameSeen = {};
     planRows.forEach(function (p) {
@@ -302,28 +307,44 @@ function MenuCore() {
       if (m == null) return;
       var code = String(p.code || '').trim();
       if (!code) { issue('Code manquant', p.ancien, p.nom, 'Plat en ' + p.menu + ' sans « Nouveau code » : impossible à relier à la gamme, non affiché', 'Plan de menu › GAMME SAISON 1 AH'); return; }
+      // Code vendu : ancien code KD/KT pour les plats listés dans SOLD_UNDER_OLD_CODE
+      var ancien = String(p.ancien || '').trim().toUpperCase();
+      var useOld = SOLD_UNDER_OLD_CODE.indexOf(ancien) >= 0 && !!gam[ancien];
+      if (SOLD_UNDER_OLD_CODE.indexOf(ancien) >= 0 && !gam[ancien]) issue('Absent de la gamme', ancien, p.nom, 'Code ' + ancien + ' (vendu sous l’ancien code) introuvable dans la gamme : affiché sous ' + code, 'GAMME PRODUITS › KD_KY_DB');
+      var kuCode = useOld ? code : '';
+      if (useOld) code = ancien;
       if (codeSeen[code]) { issue('Doublon', code, p.nom, 'Code présent plusieurs fois dans le plan (' + codeSeen[code] + ' et ' + p.menu + ')', 'Plan de menu › GAMME SAISON 1 AH'); return; }
       codeSeen[code] = p.menu;
       var g = gam[code] || null;
-      var allergTxt = p.allerg || (g ? g.allerg : '');
+      // Priorité des sources : gamme d'abord pour les plats vendus sous l'ancien code, plan d'abord sinon
+      function pick(pv, gv) {
+        var hasP = pv !== '' && pv != null, hasG = gv !== '' && gv != null;
+        if (useOld) return hasG ? gv : (hasP ? pv : '');
+        return hasP ? pv : (hasG ? gv : '');
+      }
+      var allergTxt = pick(p.allerg, g ? g.allerg : '');
       var al = parseAllergens(allergTxt);
+      // Sécurité : pour un plat vendu sous l'ancien code, on cumule les allergènes de la gamme ET du plan
+      // (un « Sans … » ne doit jamais reposer sur la source la moins complète)
+      if (useOld && g && p.allerg && g.allerg && !sameAllerg(p.allerg, g.allerg)) {
+        var alp = parseAllergens(p.allerg);
+        Object.keys(alp.set).forEach(function (k) { al.set[k] = true; });
+        allergTxt = 'Gamme : ' + g.allerg + ' · Plan : ' + p.allerg;
+      }
+      var G = g || {};
       var d = {
-        code: code, nom: p.nom || (g && g.nom) || code, menu: m, permanent: m === 0,
+        code: code, kuCode: kuCode, nom: pick(p.nom, G.nom) || code, menu: m, permanent: m === 0,
         classe: fClasse.label(p.classe), statut: p.statut, progres: String(p.progres || '').trim(),
-        validated: isValide(p.progres), saison: p.saison,
-        souscat: fSous.label(p.souscat), prot: fProt.label(p.prot), garn: fGarn.label(p.garn),
+        validated: isValide(p.progres), saison: pick(p.saison, G.saison),
+        souscat: fSous.label(pick(p.souscat, G.souscat)), prot: fProt.label(pick(p.prot, G.prot)), garn: fGarn.label(pick(p.garn, G.garn)),
         spec: g ? fSpec.label(g.spec) : '', piment: !!String(p.piment || '').trim(),
         desc: g ? (g.desc_pop || g.desc_menu || '') : '', descMenu: g ? g.desc_menu : '',
-        ingr: p.ingr || (g ? g.ingr : ''),
-        poids: num(p.poids), kcal: num(p.kcal), mg: num(p.mg), ags: num(p.ags), glu: num(p.glu),
-        suc: num(p.suc), fib: num(p.fib), pro: num(p.pro), sel: num(p.sel),
+        ingr: pick(p.ingr, G.ingr),
+        poids: num(pick(p.poids, G.poids)), kcal: num(pick(p.kcal, G.kcal)), mg: num(pick(p.mg, G.mg)), ags: num(pick(p.ags, G.ags)),
+        glu: num(pick(p.glu, G.glu)), suc: num(pick(p.suc, G.suc)), fib: num(pick(p.fib, G.fib)), pro: num(pick(p.pro, G.pro)), sel: num(pick(p.sel, G.sel)),
         allergTxt: allergTxt, allergens: al.set, allergKnown: !al.empty,
         programs: {}, planPrograms: {}, qc: []
       };
-      if (d.kcal == null && g) d.kcal = num(g.kcal);
-      if (d.pro == null && g) d.pro = num(g.pro);
-      if (d.glu == null && g) d.glu = num(g.glu);
-      if (d.sel == null && g) d.sel = num(g.sel);
       d.isVeggie = nk(d.souscat) === 'vegetarien';
       d.hasPorc = !!al.set.porc || nk(d.prot) === 'porc';
       var where = 'Plan de menu › GAMME SAISON 1 AH';
@@ -341,10 +362,10 @@ function MenuCore() {
       if (!g) { d.qc.push('absent de la gamme'); issue('Absent de la gamme', code, d.nom, 'Code introuvable dans KD_KY_DB', 'GAMME PRODUITS › KD_KY_DB'); }
       if (al.empty) { d.qc.push('allergènes non renseignés'); issue('Allergènes vides', code, d.nom, 'Préférences alimentaires vides : le plat n’est compté dans aucun filtre « Sans … »', where + ' › Préférences alimentaires'); }
       if (al.unknown.length) issue('Allergène non reconnu', code, d.nom, 'Mot(s) non reconnu(s) : « ' + al.unknown.join(' », « ') + ' » (texte : ' + allergTxt + ')', where + ' › Préférences alimentaires');
-      if (g && p.allerg && g.allerg && !sameAllerg(p.allerg, g.allerg)) issue('Allergènes différents', code, d.nom, 'Plan : « ' + p.allerg + ' » / Gamme : « ' + g.allerg + ' »', 'Les 2 fichiers › Préférences alimentaires');
+      if (g && p.allerg && g.allerg && !sameAllerg(p.allerg, g.allerg)) issue('Allergènes différents', code, d.nom, 'Plan' + (kuCode ? ' (' + kuCode + ')' : '') + ' : « ' + p.allerg + ' » / Gamme : « ' + g.allerg + ' »' + (kuCode ? ' (l’app cumule les deux)' : ''), 'Les 2 fichiers › Préférences alimentaires');
       if (g && g.nom && nk(g.nom) !== nk(p.nom)) issue('Nom différent', code, d.nom, 'Plan : « ' + p.nom + ' » / Gamme : « ' + g.nom + ' »', 'Les 2 fichiers › Nom PRODUIT');
       if (g && num(g.kcal) != null && num(p.kcal) != null && Math.abs(num(g.kcal) - num(p.kcal)) > Math.max(5, 0.02 * num(p.kcal)))
-        issue('Kcal différentes', code, d.nom, 'Plan : ' + round(num(p.kcal)) + ' kcal / Gamme : ' + round(num(g.kcal)) + ' kcal', 'Les 2 fichiers › ENERGIE KCAL / plat');
+        issue('Kcal différentes', code, d.nom, 'Plan' + (kuCode ? ' (' + kuCode + ')' : '') + ' : ' + round(num(p.kcal)) + ' kcal / Gamme : ' + round(num(g.kcal)) + ' kcal' + (kuCode ? ' (l’app suit la gamme)' : ''), 'Les 2 fichiers › ENERGIE KCAL / plat');
       if (nk(p.statut) !== 'valide') issue('Statut', code, d.nom, 'Statut = « ' + (p.statut || 'vide') + ' »', where + ' › Statut');
       ['kcal', 'pro', 'glu', 'sel'].forEach(function (k) { if (d[k] == null) issue('Nutrition manquante', code, d.nom, 'Valeur « ' + k + ' / plat » vide : le plat n’entre pas dans les filtres nutritionnels', where); });
       if (nk(d.classe) === 'vegetarien' && !d.isVeggie) issue('Végétarien incohérent', code, d.nom, 'Classe Végétarien mais sous-catégorie « ' + d.souscat + ' »', where + ' › Sous catégorie');
@@ -447,7 +468,7 @@ function MenuCore() {
       { id: 'sans_crustaces', label: 'Sans crustacés', hint: 'Allergènes renseignés et sans crustacés', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !/crevette|homard|langoustine|gambas/.test(txt(d)); } },
       { id: 'sans_epices', label: 'Sans épicés', hint: 'Pas encore disponible : aucune colonne « épicé » dans les fichiers R&D', unavailable: true, test: function () { return false; } },
       { id: 'sans_coque', label: 'Sans fruits à coques', hint: 'Allergènes renseignés et sans fruits à coque', test: al('coque') },
-      { id: 'sans_fruitsdemer', label: 'Sans fruits de mer', hint: 'Sans crustacés ni mollusques', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !d.allergens.mollusques && !SEAFOOD.test(txt(d)); } },
+      { id: 'sans_fruitsdemer', label: 'Sans fruits de mer', hint: 'Sans crustacés ni mollusques', test: function (d) { return d.allergKnown && !d.allergens.crustaces && !d.allergens.mollusques && !d.allergens['_fruit de mer'] && !SEAFOOD.test(txt(d)); } },
       { id: 'sans_gluten', label: 'Sans gluten', hint: 'Allergènes renseignés et sans gluten', test: al('gluten') },
       { id: 'sans_lait', label: 'Sans lait', hint: 'Allergènes renseignés et sans lait', test: al('lait') },
       { id: 'sans_mollusques', label: 'Sans mollusque', hint: 'Allergènes renseignés et sans mollusques', test: function (d) { return d.allergKnown && !d.allergens.mollusques && !/st jacques|saint jacques|moule|calamar|encornet|poulpe/.test(txt(d)); } },
@@ -477,7 +498,7 @@ function MenuCore() {
     return S;
   }
 
-  return { build: build, DEFAULT_SETTINGS: DEFAULT_SETTINGS, PROGRAMS: PROGRAMS, ALLERGENS: ALLERGENS, parseAllergens: parseAllergens, nk: nk };
+  return { build: build, SOLD_UNDER_OLD_CODE: SOLD_UNDER_OLD_CODE, DEFAULT_SETTINGS: DEFAULT_SETTINGS, PROGRAMS: PROGRAMS, ALLERGENS: ALLERGENS, parseAllergens: parseAllergens, nk: nk };
 }
 
 </script>
@@ -577,7 +598,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
       var vals = st.facets[k]; if (!vals || !vals.length) return;
       tests.push(function (d) { return vals.indexOf(d[k]) >= 0; });
     });
-    if (st.q) { var q = Core.nk(st.q); tests.push(function (d) { return Core.nk(d.nom).indexOf(q) >= 0 || Core.nk(d.code).indexOf(q) >= 0; }); }
+    if (st.q) { var q = Core.nk(st.q); tests.push(function (d) { return Core.nk(d.nom).indexOf(q) >= 0 || Core.nk(d.code).indexOf(q) >= 0 || (d.kuCode && Core.nk(d.kuCode).indexOf(q) >= 0); }); }
     return tests;
   }
   function apply(list, tests) { return list.filter(function (d) { return tests.every(function (t) { return t(d); }); }); }
@@ -712,7 +733,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
   // ---------- Duplication de colis
   function parseParcel(txt) {
     var byCode = {}, rows = [], seen = {};
-    M.dishes.forEach(function (d) { byCode[d.code.toUpperCase()] = d; });
+    M.dishes.forEach(function (d) { byCode[d.code.toUpperCase()] = d; if (d.kuCode) byCode[d.kuCode.toUpperCase()] = d; });
     String(txt || '').split(/\n+/).forEach(function (line) {
       var raw = line.trim(); if (!raw) return;
       var qm = raw.match(/^(\d{1,2})\s*[x×*]?\s+/i), qty = qm ? +qm[1] : 1;
@@ -823,7 +844,7 @@ window.__BOOT__ = { api: "https://script.google.com/macros/s/AKfycbwlQHfUHoM0VFt
     var rows = [['Poids', d.poids, 'g', 0], ['Énergie', d.kcal, 'kcal', 0], ['Matières grasses', d.mg, 'g', 1], ['dont saturées', d.ags, 'g', 1], ['Glucides', d.glu, 'g', 1], ['dont sucres', d.suc, 'g', 1], ['Fibres', d.fib, 'g', 1], ['Protéines', d.pro, 'g', 1], ['Sel', d.sel, 'g', 2]];
     var tags = M.filters.filter(function (f) { return f.group === 'regime' && f.test(d); }).map(function (f) { return f.label; });
     var h = '<button class="x" data-close="dishModal">×</button><div class="badges">' + (d.permanent ? '<span class="badge perm">Permanent (Menu 0)</span>' : '<span class="badge">Menu ' + d.menu + '</span>') + '</div>' +
-      '<h2>' + esc(d.nom) + '</h2><div class="meta">' + esc(d.code) + ' · ' + [d.classe, d.souscat, d.prot, d.garn, d.spec, d.saison].filter(Boolean).map(esc).join(' · ') + '</div>';
+      '<h2>' + esc(d.nom) + '</h2><div class="meta"><span class="sku">' + esc(d.code) + '</span>' + (d.kuCode ? ' <span class="note">(code plan : ' + esc(d.kuCode) + ')</span>' : '') + ' · ' + [d.classe, d.souscat, d.prot, d.garn, d.spec, d.saison].filter(function (x, i, a) { return x && a.indexOf(x) === i; }).map(esc).join(' · ') + '</div>';
     if (d.desc) h += '<div class="sec"><h4>Description</h4><div>' + esc(d.desc) + '</div></div>';
     h += '<div class="sec"><h4>Allergènes</h4><div class="alg">' + allergList(d) + '</div>' + (d.allergTxt ? '<div class="note" style="margin-top:4px">Texte source : ' + esc(d.allergTxt) + '</div>' : '') + '</div>';
     if (tags.length) h += '<div class="sec"><h4>Profils</h4><div class="badges">' + tags.map(function (t) { return '<span class="badge">' + esc(t) + '</span>'; }).join('') + '</div></div>';

@@ -44,7 +44,9 @@ var GAMME_FIELDS = {
   g_con: 'GAMME KD CONSOLIDATION', g_ky: 'GAMME KY QUOTIDIEN', allerg: 'Préférences alimentaires',
   prot: 'TYPE DE PROTEINE', garn: 'GARNITURE', spec: 'SPECIALITE', ingr: 'Ingrédients',
   kcal: 'ENERGIE KCAL / plat', pro: 'Protéines / Plat (en g)', glu: 'Glucides / Plat (en g)',
-  sel: 'Sel / Plat (en g)'
+  sel: 'Sel / Plat (en g)', poids: 'POIDS NET PORTION (en g)', mg: 'MG / Plat (en g)',
+  ags: 'Acide Gras Saturés / Plat (en g)', suc: 'Sucres / Plat (en g)', fib: 'Fibres / Plat (en g)',
+  souscat: 'Sous catégorie', saison: 'SAISON (pour plats)'
 };
 
 /* ========================= API (appelée par la page GitHub) ========================= */
@@ -156,7 +158,8 @@ function readRawFrom_(plan, gammeSs) {
   });
   var p = pick_(plan.getSheetByName(CONFIG.SHEET_PLAN), PLAN_FIELDS);
   var planRows = p.rows.filter(function (o) { return o.menu !== ''; });
-  var codes = {}; planRows.forEach(function (o) { if (o.code) codes[o.code] = 1; });
+  // Lignes de gamme utiles : codes KU du plan + anciens codes KD/KT (certains plats sont vendus sous l'ancien code)
+  var codes = {}; planRows.forEach(function (o) { if (o.code) codes[o.code] = 1; if (o.ancien) codes[String(o.ancien).trim().toUpperCase()] = 1; });
   var g = pick_(gammeSs.getSheetByName(CONFIG.SHEET_GAMME), GAMME_FIELDS);
   var gamRows = g.rows.filter(function (o) { return codes[o.sku]; });
   return {
